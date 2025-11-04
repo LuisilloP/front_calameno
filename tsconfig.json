@@ -17,10 +17,6 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
-    "baseUrl": ".",
-    "types": [
-      "vitest/globals"
-    ],
     "plugins": [
       {
         "name": "next"
