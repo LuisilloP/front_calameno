@@ -1,21 +1,16 @@
-"use client";
-import { useEffect, useState } from "react";
+import { withAuth } from "../../components/withAuth";
+import { useAuth } from "../../context/AuthContext";
 
-export default function Home() {
-  const [user, setUser] = useState<any>(null);
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
-  }, []);
+function DashboardPage() {
+  const { user, logout } = useAuth();
 
   return (
-    <main className="p-6">
-      {user ? (
-        <h1>Bienvenido, {user.name} 👋</h1>
-      ) : (
-        <h1>Bienvenido al sitio</h1>
-      )}
-    </main>
+    <div>
+      <h1>Dashboard</h1>
+      <p>Bienvenido, {user?.name}!</p>
+      <button onClick={logout}>Cerrar Sesión</button>
+    </div>
   );
 }
+
+export default withAuth(DashboardPage);

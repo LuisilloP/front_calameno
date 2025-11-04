@@ -1,23 +1,27 @@
 "use client";
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import api from "@/services/api";
-import { LoginResponse } from "@/interfaces";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Login() {
-  const router = useRouter();
-  const [credentials, setCredentials] = useState({
-    email: "",
-    password: "",
-  });
+  const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [didSubmit, setDidSubmit] = useState(false);
+  const router = useRouter();
+
+  const { login, user, loading: authLoading } = useAuth();
+
+  // If already authenticated (context has user), go to dashboard
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace("/dashboard");
+    }
+  }, [authLoading, user, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCredentials({
-      ...credentials,
-      [e.target.id]: e.target.value,
-    });
+    setCredentials({ ...credentials, [e.target.id]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -26,26 +30,25 @@ export default function Login() {
     setError("");
 
     try {
-      const response = await api.post<LoginResponse>("/login", credentials);
-
-      if (response.data.token) {
-        localStorage.setItem("token", response.data.token);
-        // Configurar el token para futuras peticiones
-        axios.defaults.headers.common[
-          "Authorization"
-        ] = `Bearer ${response.data.token}`;
-        router.push("/dashboard");
-      }
+      // mark we attempted login and wait for context user to be set before navigating
+      setDidSubmit(true);
+      await login(credentials.email, credentials.password);
+      // do NOT navigate here; wait for user state to update in effect below
     } catch (err: any) {
-      if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
-        setError("Error al conectar con el servidor");
-      }
+      const message = err?.message || err?.response?.data?.message;
+      setError(message || "Error al conectar con el servidor");
+      setDidSubmit(false);
     } finally {
       setLoading(false);
     }
   };
+
+  // After a successful login attempt, wait until context user is available then navigate
+  useEffect(() => {
+    if (didSubmit && user) {
+      router.replace("/dashboard");
+    }
+  }, [didSubmit, user, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
