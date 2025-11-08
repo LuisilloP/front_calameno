@@ -7,8 +7,8 @@ export default function DashboardPage() {
   const router = useRouter();
 
   return (
-    <main style={{ padding: 24 }} className="bg-gray-800">
-      <h1>Dashboard</h1>
+    <main className="p-6 min-h-screen">
+      <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
     </main>
   );
 }

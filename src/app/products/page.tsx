@@ -47,12 +47,14 @@ export default function ProductsPage() {
   };
 
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Ingreso de producto</h1>
+    <main className="p-6 min-h-screen">
+      <h1 className="text-2xl font-bold mb-6 text-foreground">
+        Ingreso de producto
+      </h1>
 
       <form
         onSubmit={handleSubmit}
-        className="grid grid-cols-1 md:grid-cols-2 gap-4"
+        className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6"
       >
         <div>
           <Input
@@ -131,7 +133,7 @@ export default function ProductsPage() {
         <div className="md:col-span-2 text-right">
           <button
             type="submit"
-            className="bg-stone-900 text-white px-4 py-2 rounded hover:bg-stone-700"
+            className="bg-primary text-primary-foreground px-6 py-3 rounded hover:bg-primary/90 transition-colors"
           >
             Guardar producto
           </button>

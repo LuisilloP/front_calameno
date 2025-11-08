@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import type { ComponentType, ReactNode, SVGProps } from "react";
+import { useState } from "react";
 
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 
@@ -20,6 +23,7 @@ type SidebarNavItem = {
   isActive?: boolean;
   badge?: string;
   ariaLabel?: string;
+  children?: SidebarNavItem[]; // Soporte para submenú
 };
 
 type SidebarSection = {
@@ -143,6 +147,10 @@ export type SidebarNavigationProps = {
   className?: string;
   /** Slot for extra content (e.g. footer links). */
   footer?: ReactNode;
+  /** Optional theme toggle handler for dark mode. */
+  onThemeToggle?: () => void;
+  /** Current theme for rendering the toggle icon. */
+  currentTheme?: "light" | "dark";
 };
 
 /**
@@ -163,6 +171,8 @@ export function SidebarNavigation({
   onMenuToggle,
   className,
   footer,
+  onThemeToggle,
+  currentTheme = "light",
 }: SidebarNavigationProps) {
   const tokens = variantTokens[variant];
 
@@ -172,33 +182,87 @@ export function SidebarNavigation({
         "flex flex-col h-screen w-full overflow-hidden  border lg:max-w-xs",
         tokens.container,
         tokens.divider,
-        className,
+        className
       )}
       aria-label="Secondary navigation"
     >
-      <header className={mergeClassNames("flex flex-col gap-6 p-6", tokens.header)}>
+      <header
+        className={mergeClassNames("flex flex-col gap-6 p-6", tokens.header)}
+      >
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             {brand.logo ? (
-              <span aria-hidden className="flex h-10 w-10 items-center justify-center">
+              <span
+                aria-hidden
+                className="flex h-10 w-10 items-center justify-center"
+              >
                 {brand.logo}
               </span>
             ) : null}
             {renderBrandName(brand)}
           </div>
-          {onMenuToggle ? (
-            <button
-              type="button"
-              onClick={onMenuToggle}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
-              aria-label="Collapse sidebar"
-            >
-              <span aria-hidden className="block h-0.5 w-6 rounded-full bg-current" />
-            </button>
-          ) : null}
+          <div className="flex items-center gap-2">
+            {onThemeToggle ? (
+              <button
+                type="button"
+                onClick={onThemeToggle}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                aria-label={`Cambiar a modo ${
+                  currentTheme === "light" ? "oscuro" : "claro"
+                }`}
+              >
+                {currentTheme === "light" ? (
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                    />
+                  </svg>
+                )}
+              </button>
+            ) : null}
+            {onMenuToggle ? (
+              <button
+                type="button"
+                onClick={onMenuToggle}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                aria-label="Collapse sidebar"
+              >
+                <span
+                  aria-hidden
+                  className="block h-0.5 w-6 rounded-full bg-current"
+                />
+              </button>
+            ) : null}
+          </div>
         </div>
         <div className="flex items-center justify-between gap-3 text-sm">
-          {brand.tagline ? <p className="text-slate-300">{brand.tagline}</p> : <span />}
+          {brand.tagline ? (
+            <p className="text-slate-300">{brand.tagline}</p>
+          ) : (
+            <span />
+          )}
           {brand.badge ? (
             <Badge href={brand.badgeHref} className={tokens.badge}>
               {brand.badge}
@@ -220,7 +284,9 @@ export function SidebarNavigation({
                         {crumb.label}
                       </Link>
                     ) : (
-                      <span aria-current={isLast ? "page" : undefined}>{crumb.label}</span>
+                      <span aria-current={isLast ? "page" : undefined}>
+                        {crumb.label}
+                      </span>
                     )}
                     {!isLast ? (
                       <span aria-hidden className="text-slate-500">
@@ -240,7 +306,12 @@ export function SidebarNavigation({
           {sections.map((section) => (
             <section key={section.id} className="space-y-3">
               {section.title ? (
-                <h2 className={mergeClassNames("text-xs font-semibold uppercase tracking-wide", tokens.sectionLabel)}>
+                <h2
+                  className={mergeClassNames(
+                    "text-xs font-semibold uppercase tracking-wide",
+                    tokens.sectionLabel
+                  )}
+                >
                   {section.title}
                 </h2>
               ) : null}
@@ -253,9 +324,17 @@ export function SidebarNavigation({
           ))}
 
           {teamSection ? (
-            <section className="space-y-3" aria-label={teamSection.title ?? "Teams"}>
+            <section
+              className="space-y-3"
+              aria-label={teamSection.title ?? "Teams"}
+            >
               {teamSection.title ? (
-                <h2 className={mergeClassNames("text-xs font-semibold uppercase tracking-wide", tokens.sectionLabel)}>
+                <h2
+                  className={mergeClassNames(
+                    "text-xs font-semibold uppercase tracking-wide",
+                    tokens.sectionLabel
+                  )}
+                >
                   {teamSection.title}
                 </h2>
               ) : null}
@@ -273,7 +352,7 @@ export function SidebarNavigation({
         <footer
           className={mergeClassNames(
             "mt-auto space-y-4 border-t px-6 py-6",
-            tokens.divider,
+            tokens.divider
           )}
           aria-label="Sidebar footer"
         >
@@ -330,7 +409,66 @@ function InteractiveWrapper({
   );
 }
 
+function NavItemWithSubmenu({
+  item,
+  tokens,
+}: {
+  item: SidebarNavItem;
+  tokens: VariantTokens;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const Icon = item.icon;
+  const baseClasses =
+    "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2";
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={mergeClassNames(
+          baseClasses,
+          tokens.navItem,
+          item.isActive && tokens.navItemActive
+        )}
+      >
+        {Icon ? (
+          <Icon className="h-5 w-5 shrink-0" focusable="false" aria-hidden />
+        ) : null}
+        <span className="flex-1 truncate text-left">{item.label}</span>
+        <svg
+          className={mergeClassNames(
+            "h-4 w-4 transition-transform",
+            isOpen && "rotate-180"
+          )}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </button>
+      {isOpen && item.children && (
+        <ul className="ml-8 mt-1 space-y-1">
+          {item.children.map((child) => (
+            <li key={child.id}>{renderNavItem(child, tokens)}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 function renderNavItem(item: SidebarNavItem, tokens: VariantTokens) {
+  if (item.children && item.children.length > 0) {
+    return <NavItemWithSubmenu item={item} tokens={tokens} />;
+  }
+
   const Icon = item.icon;
   const baseClasses =
     "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2";
@@ -343,22 +481,18 @@ function renderNavItem(item: SidebarNavItem, tokens: VariantTokens) {
       className={mergeClassNames(
         baseClasses,
         tokens.navItem,
-        item.isActive && tokens.navItemActive,
+        item.isActive && tokens.navItemActive
       )}
     >
       {Icon ? (
-        <Icon
-          className="h-5 w-5 shrink-0"
-          focusable="false"
-          aria-hidden
-        />
+        <Icon className="h-5 w-5 shrink-0" focusable="false" aria-hidden />
       ) : null}
       <span className="flex-1 truncate">{item.label}</span>
       {item.badge ? (
         <span
           className={mergeClassNames(
             "rounded-full px-2 py-0.5 text-xs font-semibold",
-            tokens.navBadge,
+            tokens.navBadge
           )}
         >
           {item.badge}
@@ -377,12 +511,16 @@ function renderTeamItem(team: SidebarTeam, tokens: VariantTokens) {
       href={team.href}
       onClick={team.onClick}
       ariaLabel={team.name}
-      className={mergeClassNames(baseClasses, tokens.teamItem, team.isActive && tokens.teamItemActive)}
+      className={mergeClassNames(
+        baseClasses,
+        tokens.teamItem,
+        team.isActive && tokens.teamItemActive
+      )}
     >
       <span
         className={mergeClassNames(
           "flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold",
-          tokens.teamInitials,
+          tokens.teamInitials
         )}
       >
         {team.initials}
@@ -400,14 +538,14 @@ function renderUserCard(user: SidebarUser, tokens: VariantTokens) {
       ariaLabel={user.name}
       className={mergeClassNames(
         "flex items-center gap-3 rounded-2xl px-3 py-2 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-        tokens.userCard,
+        tokens.userCard
       )}
     >
       <span
         className={mergeClassNames(
           "relative inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-semibold uppercase ring-4",
           tokens.avatarFallback,
-          tokens.avatarRing,
+          tokens.avatarRing
         )}
       >
         {user.avatarSrc ? (
@@ -425,7 +563,9 @@ function renderUserCard(user: SidebarUser, tokens: VariantTokens) {
       <div className="flex min-w-0 flex-1 flex-col text-sm">
         <span className="truncate font-semibold">{user.name}</span>
         {user.caption ? (
-          <span className="truncate text-xs text-slate-400">{user.caption}</span>
+          <span className="truncate text-xs text-slate-400">
+            {user.caption}
+          </span>
         ) : null}
       </div>
     </InteractiveWrapper>
@@ -473,7 +613,9 @@ function Badge({
     );
   }
 
-  return <span className={mergeClassNames(baseClass, className)}>{children}</span>;
+  return (
+    <span className={mergeClassNames(baseClass, className)}>{children}</span>
+  );
 }
 
 /* Example usage:

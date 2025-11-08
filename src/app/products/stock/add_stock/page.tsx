@@ -5,14 +5,18 @@ import { Input, Select } from "../../../../components/form";
 export default function AddStock() {
   const [searchTerm, setSearchTerm] = useState("");
   const [form, setForm] = useState({
-    location: "",
+    price: "",
+    qty: "",
     provider: "",
-    value: "",
-    qti: "",
     obs: "",
   });
   const update = (field: string, value: string) =>
     setForm((s) => ({ ...s, [field]: value }));
+  const providers = [
+    { value: "prov1", label: "Proveedor A" },
+    { value: "prov2", label: "Proveedor B" },
+    { value: "prov3", label: "Proveedor C" },
+  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,15 +47,25 @@ export default function AddStock() {
             placeholder="Escriba el nombre del producto a modificar"
           />
         </div>
-
         <div>
           <Input
-            label="Ubicacion del producto"
-            value={form.brand}
-            onChange={(v) => update("brand", v)}
+            label="Precio"
+            type="number"
+            value={form.price}
+            onChange={(v) => update("price", v)}
+            placeholder="0.00"
           />
         </div>
 
+        <div>
+          <Input
+            label="Cantidad"
+            type="number"
+            value={form.qty}
+            onChange={(v) => update("qty", v)}
+            placeholder="0"
+          />
+        </div>
         <div>
           <Select
             label="Proveedor"
@@ -60,52 +74,13 @@ export default function AddStock() {
             onChange={(v) => update("provider", v)}
           />
         </div>
-
         <div>
           <Input
-            label="Precio unitario"
-            type="number"
-            value={form.unitPrice}
-            onChange={(v) => update("unitPrice", v)}
-            placeholder="0.00"
-          />
-        </div>
-
-        <div>
-          <Input
-            label="Cantidad inicial"
-            type="number"
-            value={form.initialQty}
-            onChange={(v) => update("initialQty", v)}
-            placeholder="0"
-          />
-        </div>
-
-        <div>
-          <Input
-            label="Stock mínimo"
-            type="number"
-            value={form.minStock}
-            onChange={(v) => update("minStock", v)}
-            placeholder="0"
-          />
-        </div>
-
-        <div>
-          <Select
-            label="Unidad de medida"
-            value={form.unit}
-            options={units}
-            onChange={(v) => update("unit", v)}
-          />
-        </div>
-
-        <div>
-          <Select
-            label="Categoría"
-            value={form.category}
-            options={categories}
-            onChange={(v) => update("category", v)}
+            label="observaciones"
+            type="text"
+            value={form.obs}
+            onChange={(v) => update("obs", v)}
+            placeholder="No aplica"
           />
         </div>
 
@@ -114,7 +89,7 @@ export default function AddStock() {
             type="submit"
             className="bg-stone-900 text-white px-4 py-2 rounded hover:bg-stone-700"
           >
-            Guardar producto
+            Ingresar Producto
           </button>
         </div>
       </form>
