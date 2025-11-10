@@ -13,6 +13,7 @@ import {
   LayoutDashboardIcon,
   PackageMinusIcon,
   PackagePlusIcon,
+  ClipboardListIcon,
   Users2,
   WarehouseIcon,
   TruckIcon,
@@ -121,6 +122,12 @@ export default function TestBar() {
         title: "Acciones",
         id: "acions",
         items: [
+          {
+            id: "registroMovimientos",
+            label: "Registrar movimiento",
+            icon: ClipboardListIcon,
+            href: "/acciones/movimientos",
+          },
           {
             id: "ingresarProductos",
             label: "Ingresar Productos",
