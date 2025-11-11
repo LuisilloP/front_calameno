@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   SidebarNavigation,
   SidebarNavigationProps,
@@ -8,20 +8,21 @@ import {
 import {
   ArrowUpDownIcon,
   CircleQuestionMarkIcon,
+  ClipboardListIcon,
   EyeIcon,
   LandPlotIcon,
   LayoutDashboardIcon,
   PackageMinusIcon,
   PackagePlusIcon,
-  ClipboardListIcon,
+  Settings2Icon,
+  TagIcon,
+  TruckIcon,
   Users2,
   WarehouseIcon,
-  TruckIcon,
-  TagIcon,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
-export default function TestBar() {
+export default function ProductSidebar() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -29,131 +30,140 @@ export default function TestBar() {
     setMounted(true);
   }, []);
 
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-  };
+  const resolvedTheme = theme === "dark" ? "dark" : "light";
 
-  // Avoid hydration mismatch by not rendering until mounted
+  const handleThemeToggle = useCallback(() => {
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+  }, [resolvedTheme, setTheme]);
+
   if (!mounted) {
     return (
-      <aside className="flex flex-col h-screen w-full overflow-hidden border lg:max-w-xs bg-slate-900">
-        {/* Placeholder durante SSR */}
+      <aside className="flex h-screen w-full flex-col overflow-hidden border border-slate-800/60 bg-slate-950/80 lg:max-w-xs">
+        <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center text-slate-500">
+          <span className="text-xs uppercase tracking-[0.3em] text-slate-600">
+            Calameno
+          </span>
+          <p className="text-xs text-slate-500">Inicializando panel...</p>
+        </div>
       </aside>
     );
   }
 
-  const sidebarDemoProps: SidebarNavigationProps = {
-    variant: theme === "dark" ? "dark" : "light",
-    brand: {
-      name: "Sistema de Gestión Cocina",
-      tagline: "Angel Calameño",
-      badge: "0.1 Beta",
-      badgeHref: "#",
-    },
-    onThemeToggle: toggleTheme,
-    currentTheme: theme === "dark" || theme === "light" ? theme : "light",
-    sections: [
+  const sidebarProps = useMemo<SidebarNavigationProps>(() => {
+    const coreItems = [
       {
-        title: "Funciones Principales",
-        id: "main",
-        items: [
+        id: "dashboard",
+        label: "Panel principal",
+        icon: LayoutDashboardIcon,
+        href: "/",
+      },
+      {
+        id: "inventory",
+        label: "Inventario y stock",
+        icon: WarehouseIcon,
+        children: [
           {
-            id: "dashboard",
-            label: "Panel",
-            icon: LayoutDashboardIcon,
-            href: "/",
+            id: "inventory-products",
+            label: "Catalogo de productos",
+            href: "/products",
           },
           {
-            id: "inventory",
-            label: "Inventario",
-            icon: WarehouseIcon,
-            children: [
-              {
-                id: "new-product",
-                label: "Nuevo Producto",
-                href: "/products",
-              },
-              {
-                id: "modify-product",
-                label: "Modificar/Eliminar Producto",
-                href: "/products/1",
-              },
-            ],
-          },
-          {
-            id: "vistas",
-            label: "Vistas",
-            icon: EyeIcon,
-            href: "/vistas",
-          },
-          {
-            id: "locations",
-            label: "Ubicaciones",
-            icon: LandPlotIcon,
+            id: "inventory-locations",
+            label: "Ubicaciones y stock",
             href: "/locations",
           },
-          {
-            id: "person",
-            label: "Personas",
-            icon: Users2,
-            href: "/users",
-          },
-          {
-            id: "providers",
-            label: "Proveedores",
-            icon: TruckIcon,
-            href: "/providers",
-          },
-          {
-            id: "categories",
-            label: "Categorías",
-            icon: TagIcon,
-            href: "/categories",
-          },
-          {
-            id: "help",
-            label: "Ayuda",
-            icon: CircleQuestionMarkIcon,
-            href: "/help",
-          },
         ],
       },
       {
-        title: "Acciones",
-        id: "acions",
-        items: [
-          {
-            id: "registroMovimientos",
-            label: "Registrar movimiento",
-            icon: ClipboardListIcon,
-            href: "/acciones/movimientos",
-          },
-          {
-            id: "ingresarProductos",
-            label: "Ingresar Productos",
-            icon: PackagePlusIcon,
-            href: "/acciones/ingresar",
-          },
-          {
-            id: "egresarProductos",
-            label: "Egresar Productos",
-            icon: PackageMinusIcon,
-            href: "/acciones/egresar",
-          },
-          {
-            id: "moverProductos",
-            label: "Mover Productos",
-            icon: ArrowUpDownIcon,
-            href: "/acciones/mover",
-          },
-        ],
+        id: "insights",
+        label: "Vistas y reportes",
+        icon: EyeIcon,
+        href: "/vistas",
       },
-    ],
-    user: {
-      name: "Tom Cook",
-      avatarSrc: "https://i.pravatar.cc/160?img=5",
-      caption: "View profile",
-    },
-  };
-  return <SidebarNavigation {...sidebarDemoProps} />;
+      {
+        id: "support",
+        label: "Centro de ayuda",
+        icon: CircleQuestionMarkIcon,
+        href: "/help",
+      },
+    ];
+
+    const operationsItems = [
+      {
+        id: "registro-movimientos",
+        label: "Registro de movimientos",
+        icon: ClipboardListIcon,
+        href: "/acciones/movimientos",
+      },
+    ];
+
+    const adminItems = [
+      {
+        id: "admin-locaciones",
+        label: "Locaciones",
+        icon: LandPlotIcon,
+        href: "/admin/locaciones",
+      },
+      {
+        id: "admin-categorias",
+        label: "Categorias",
+        icon: TagIcon,
+        href: "/admin/categorias",
+      },
+      {
+        id: "admin-proveedores",
+        label: "Proveedores",
+        icon: TruckIcon,
+        href: "/admin/proveedores",
+      },
+      {
+        id: "admin-personas",
+        label: "Personas",
+        icon: Users2,
+        href: "/admin/personas",
+      },
+      {
+        id: "admin-preferencias",
+        label: "Preferencias",
+        icon: Settings2Icon,
+        href: "/settings",
+      },
+    ];
+
+    return {
+      variant: resolvedTheme,
+      brand: {
+        name: "Calameno Inventario",
+        tagline: "Operaciones en tiempo real",
+        badge: "MVP",
+        badgeHref: "#",
+      },
+      onThemeToggle: handleThemeToggle,
+      currentTheme: resolvedTheme,
+      sections: [
+        {
+          title: "Funciones principales",
+          id: "core",
+          items: coreItems,
+        },
+        {
+          title: "Operaciones",
+          id: "ops",
+          items: operationsItems,
+        },
+        {
+          title: "Administracion",
+          id: "admin",
+          items: adminItems,
+        },
+      ],
+      user: {
+        name: "Equipo Calameno",
+        avatarSrc: "https://i.pravatar.cc/160?img=5",
+        caption: "Ver perfil",
+      },
+    };
+  }, [handleThemeToggle, resolvedTheme]);
+
+  return <SidebarNavigation {...sidebarProps} />;
 }

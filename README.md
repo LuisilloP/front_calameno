@@ -68,3 +68,32 @@ Los catálogos se cachean en memoria durante la sesión y cada tarjeta expone es
 ---
 
 Este README se centra en la funcionalidad de registro de movimientos. Ajusta el contenido según evolucione el proyecto.
+## Modulo Admin
+
+Las vistas CRUD para locaciones, categorias, proveedores y personas viven en /admin/{entidad} y comparten la estetica translucida del dashboard.
+
+### Configuracion rapida
+
+1. Declara la URL base que consumen los hooks en .env: VITE_API_URL=http://localhost:8000/api/v1.
+2. Instala dependencias y levanta el servidor con pnpm install seguido de pnpm dev (o npm install && npm run dev).
+
+### Pruebas manuales recomendadas
+
+Para cada ruta (/admin/locaciones, /admin/categorias, /admin/proveedores, /admin/personas):
+
+1. **Crear** un registro nuevo. El checkbox Activa viene marcado; al guardar aparece un toast verde y la fila se agrega a la tabla.
+2. **Editar** el registro y confirma que los datos cambian tras el refetch automatico de React Query.
+3. **Duplicado**: intenta crear otra fila con el mismo nombre y verifica el mensaje "Ya existe ..." en formulario y toast.
+4. **Eliminar / Desactivar**:
+   - Locaciones solo permiten activar o desactivar; las desactivaciones muestran un confirm dialog antes de aplicar el cambio.
+   - Categorias, proveedores y personas permiten eliminar ademas de activar/desactivar; ambas acciones destructivas piden confirmacion y refrescan la tabla.
+5. **Paginacion**: cambia a la pagina 2 con distintos limites (10/25/50) y revisa en la ventana de red que la peticion use skip = pageIndex * limit.
+
+Tambien valida los estados vacios, skeleton loaders y que los codigos *_duplicate y *_not_found disparan mensajes especificos; el resto de errores activa el banner "No se pudo completar la operacion".
+## Guia de layout
+
+La aplicacion usa `src/components/LayoutContent.tsx` como cascaron global. Este componente fija la barra lateral (`src/components/product_bar.tsx`) en un <aside> pegado al tope y expone un <main> central con padding consistente. Cualquier vista en `src/app/**/page.tsx` se renderiza dentro de ese `main`, por lo que solo necesita preocuparse por su propio contenido (usa `AdminPageShell` u otro contenedor si quieres titulares/secciones).
+
+- **Sidebar**: agrega o reordena enlaces en `product_bar.tsx`, respetando las secciones `Funciones principales`, `Operaciones` y `Administracion` para mantener coherencia.
+- **Vistas**: crea componentes de pagina dentro de `src/modules/<feature>/pages` y monta la ruta en `src/app/.../page.tsx`. El contenedor global ya provee fondo, anchos maximos y tipografia.
+- **Componentes reutilizables**: ubicalos en `src/modules/<feature>/components` o en `src/components/ui` si son genericos. Mantener esta arquitectura evita desalinear la barra y asegura que todas las pantallas compartan el mismo estilo del dashboard/acciones.
