@@ -1,52 +1,128 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { productosApi, type Producto, type ProductoCreate, type ProductoUpdate } from './api';
+"use client";
 
-export function useProductos() {
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { useApiClient } from "@/modules/admin/hooks/useApiClient";
+import { ListParams } from "@/modules/admin/types";
+import {
+  createProducto,
+  deleteProducto,
+  getProducto,
+  listCategoriasCatalog,
+  listMarcasCatalog,
+  listProductos,
+  listUomsCatalog,
+  toggleProductoActivo,
+  updateProducto,
+} from "./api";
+import { ProductoPayload, CatalogItem } from "./types";
+
+const PRODUCTOS_KEY = "productos";
+const CATALOG_KEY = "catalogos";
+const STALE_TIME = 1000 * 60 * 10;
+
+export const useProductosList = (params: ListParams) => {
+  const { request } = useApiClient();
   return useQuery({
-    queryKey: ['productos'],
-    queryFn: productosApi.getAll,
+    queryKey: [PRODUCTOS_KEY, params],
+    queryFn: () => listProductos(params, request),
+    keepPreviousData: true,
   });
-}
+};
 
-export function useProducto(id: number) {
+export const useProductoDetail = (id?: number) => {
+  const { request } = useApiClient();
   return useQuery({
-    queryKey: ['productos', id],
-    queryFn: () => productosApi.getById(id),
-    enabled: !!id,
-  });
-}
-
-export function useCreateProducto() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (data: ProductoCreate) => productosApi.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['productos'] });
+    queryKey: [PRODUCTOS_KEY, "detail", id],
+    queryFn: () => {
+      if (!id) {
+        throw new Error("id requerido");
+      }
+      return getProducto(id, request);
     },
+    enabled: Boolean(id),
   });
-}
+};
 
-export function useUpdateProducto() {
+export const useCreateProducto = () => {
+  const { request } = useApiClient();
   const queryClient = useQueryClient();
-  
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: ProductoUpdate }) =>
-      productosApi.update(id, data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['productos'] });
-      queryClient.invalidateQueries({ queryKey: ['productos', variables.id] });
-    },
+    mutationFn: (payload: ProductoPayload) => createProducto(payload, request),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: [PRODUCTOS_KEY],
+      }),
   });
-}
+};
 
-export function useDeleteProducto() {
+export const useUpdateProducto = () => {
+  const { request } = useApiClient();
   const queryClient = useQueryClient();
-  
   return useMutation({
-    mutationFn: (id: number) => productosApi.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['productos'] });
-    },
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: number;
+      payload: Partial<ProductoPayload>;
+    }) => updateProducto(id, payload, request),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: [PRODUCTOS_KEY],
+      }),
   });
-}
+};
+
+export const useDeleteProducto = () => {
+  const { request } = useApiClient();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => deleteProducto(id, request),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: [PRODUCTOS_KEY],
+      }),
+  });
+};
+
+export const useToggleProducto = () => {
+  const { request } = useApiClient();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, activo }: { id: number; activo: boolean }) =>
+      toggleProductoActivo(id, activo, request),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: [PRODUCTOS_KEY],
+      }),
+  });
+};
+
+const makeCatalogHook = (
+  key: string,
+  fetcher: (requester: ReturnType<typeof useApiClient>["request"]) => Promise<
+    CatalogItem[]
+  >
+) => {
+  return () => {
+    const { request } = useApiClient();
+    return useQuery({
+      queryKey: [CATALOG_KEY, key],
+      queryFn: () => fetcher(request),
+      staleTime: STALE_TIME,
+    });
+  };
+};
+
+export const useCatalogoUoms = makeCatalogHook("uoms", listUomsCatalog);
+export const useCatalogoMarcas = makeCatalogHook("marcas", listMarcasCatalog);
+export const useCatalogoCategorias = makeCatalogHook(
+  "categorias",
+  listCategoriasCatalog
+);
+
+export type { Producto, CatalogItem } from "./types";

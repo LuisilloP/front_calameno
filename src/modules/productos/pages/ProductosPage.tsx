@@ -1,176 +1,304 @@
 "use client";
 
-import React, { useState } from 'react';
-import { PackagePlus, PackageX } from 'lucide-react';
-import { ProductoForm } from '../components/ProductoForm';
-import { ProductosTable } from '../components/ProductosTable';
-import { useProductos, useCreateProducto, useUpdateProducto, useDeleteProducto } from '../hooks';
-import { Producto, ProductoCreate } from '../api';
-import { useCatalogResource } from '@/hooks/useCatalogResource';
-import { BASE_URL } from '@/api/config';
+import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { AdminPageShell } from "@/modules/admin/components/AdminPageShell";
+import {
+  AdminToastProvider,
+  useAdminToast,
+} from "@/modules/admin/components/AdminToastProvider";
+import { AdminConfirmDialog } from "@/modules/admin/components/AdminConfirmDialog";
+import { ProductoTable } from "../components/ProductoTable";
+import { ProductoForm } from "../components/ProductoForm";
+import { ProductoFilters } from "../components/ProductoFilters";
+import {
+  useCatalogoCategorias,
+  useCatalogoMarcas,
+  useCatalogoUoms,
+  useCreateProducto,
+  useDeleteProducto,
+  useProductosList,
+  useToggleProducto,
+  useUpdateProducto,
+  Producto,
+} from "../hooks";
+import { ProductoFormState } from "../types";
+import {
+  buildListParams,
+  DEFAULT_PAGE_SIZE,
+} from "@/modules/admin/types";
+import { normalizeApiError } from "@/modules/admin/api/client";
 
-export function ProductosPage() {
-  const [showForm, setShowForm] = useState(false);
-  const [editingProducto, setEditingProducto] = useState<Producto | null>(null);
+const INITIAL_LIMIT = DEFAULT_PAGE_SIZE;
 
-  // Datos
-  const { data: productos, isLoading, error } = useProductos();
-  const { data: uomsRaw = [] } = useCatalogResource('uoms');
-  
-  // Fetch categorias y marcas directamente
-  const [categorias, setCategorias] = React.useState<Array<{ id: number; nombre: string }>>([]);
-  const [marcas, setMarcas] = React.useState<Array<{ id: number; nombre: string }>>([]);
-  
-  React.useEffect(() => {
-    const loadCatalogs = async () => {
-      try {
-        const [catResponse, marcasResponse] = await Promise.all([
-          fetch(`${BASE_URL}/categorias/?limit=500`),
-          fetch(`${BASE_URL}/marcas/?limit=500`),
-        ]);
-        
-        if (catResponse.ok) {
-          setCategorias(await catResponse.json());
-        }
-        if (marcasResponse.ok) {
-          setMarcas(await marcasResponse.json());
-        }
-      } catch (error) {
-        console.error('Error loading catalogs:', error);
-      }
-    };
-    loadCatalogs();
-  }, []);
-  
-  // Mapear UOMs para incluir simbolo (usando abreviatura)
-  const uoms = uomsRaw.map(uom => ({
-    id: uom.id,
-    nombre: uom.nombre,
-    simbolo: uom.abreviatura || uom.nombre,
-  }));
+const ProductosPageContent = () => {
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(INITIAL_LIMIT);
+  const [searchValue, setSearchValue] = useState("");
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [formMode, setFormMode] = useState<"create" | "edit">("create");
+  const [selectedProducto, setSelectedProducto] = useState<Producto | null>(
+    null
+  );
+  const [pendingDelete, setPendingDelete] = useState<Producto | null>(null);
+  const [bannerMessage, setBannerMessage] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
-  // Mutations
+  const params = useMemo(
+    () => buildListParams(pageIndex, pageSize),
+    [pageIndex, pageSize]
+  );
+
+  const listQuery = useProductosList(params);
+  const { data: uomsData } = useCatalogoUoms();
+  const { data: marcasData } = useCatalogoMarcas();
+  const { data: categoriasData } = useCatalogoCategorias();
+
+  const catalogs = {
+    uoms: uomsData ?? [],
+    marcas: marcasData ?? [],
+    categorias: categoriasData ?? [],
+  };
+
+  const filteredRows = useMemo(() => {
+    const items = listQuery.data?.items ?? [];
+    if (!searchValue.trim()) return items;
+    const term = searchValue.toLowerCase();
+    return items.filter(
+      (item) =>
+        item.nombre.toLowerCase().includes(term) ||
+        item.sku?.toLowerCase().includes(term)
+    );
+  }, [listQuery.data, searchValue]);
+
+  const total = listQuery.data?.total ?? 0;
+  const queryClient = useQueryClient();
+  const { pushToast } = useAdminToast();
+
   const createMutation = useCreateProducto();
   const updateMutation = useUpdateProducto();
   const deleteMutation = useDeleteProducto();
+  const toggleMutation = useToggleProducto();
 
-  const handleCreate = async (data: ProductoCreate) => {
-    try {
-      await createMutation.mutateAsync(data);
-      setShowForm(false);
-      alert('Producto creado exitosamente');
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'Error al crear producto');
-    }
+  const resetFormState = () => {
+    setSelectedProducto(null);
+    setFormError(null);
+    setBannerMessage(null);
   };
 
-  const handleUpdate = async (data: ProductoCreate) => {
-    if (!editingProducto) return;
+  const openCreateModal = () => {
+    setFormMode("create");
+    setIsFormOpen(true);
+    resetFormState();
+  };
 
-    try {
-      await updateMutation.mutateAsync({
-        id: editingProducto.id,
-        data,
+  const openEditModal = (producto: Producto) => {
+    setFormMode("edit");
+    setSelectedProducto(producto);
+    setIsFormOpen(true);
+    setFormError(null);
+  };
+
+  const handleError = async (error: unknown) => {
+    const parsed = normalizeApiError(error);
+    const code = parsed.code ?? "";
+    if (code === "producto_sku_duplicate") {
+      const message = "SKU ya registrado. Verifica un identificador único.";
+      setFormError(message);
+      pushToast({ tone: "warning", message });
+      return;
+    }
+    if (code.endsWith("_not_found")) {
+      pushToast({
+        tone: "info",
+        message: parsed.message ?? "El registro ya no existe. Refrescamos la tabla.",
       });
-      setEditingProducto(null);
-      setShowForm(false);
-      alert('Producto actualizado exitosamente');
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'Error al actualizar producto');
+      await queryClient.invalidateQueries({ queryKey: ["productos"] });
+      return;
     }
+    const message =
+      parsed.message || "No se pudo completar la operación. Intenta nuevamente.";
+    setBannerMessage(message);
+    pushToast({ tone: "error", message });
   };
 
-  const handleEdit = (producto: Producto) => {
-    setEditingProducto(producto);
-    setShowForm(true);
-  };
+  const handleSubmit = async (values: ProductoFormState) => {
+    const payload = {
+      nombre: values.nombre,
+      sku: values.sku ? values.sku.toUpperCase() : undefined,
+      activo: values.activo,
+      uom_id: values.uom_id!,
+      marca_id: values.marca_id ?? undefined,
+      categoria_id: values.categoria_id ?? undefined,
+    };
 
-  const handleDelete = async (id: number) => {
     try {
-      await deleteMutation.mutateAsync(id);
-      alert('Producto eliminado exitosamente');
+      if (formMode === "create") {
+        await createMutation.mutateAsync(payload);
+        pushToast({
+          tone: "success",
+          message: `Producto ${values.nombre} creado.`,
+        });
+      } else if (selectedProducto) {
+        await updateMutation.mutateAsync({
+          id: selectedProducto.id,
+          payload,
+        });
+        pushToast({
+          tone: "success",
+          message: `Producto ${values.nombre} actualizado.`,
+        });
+      }
+      setIsFormOpen(false);
+      resetFormState();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Error al eliminar producto');
+      await handleError(error);
     }
   };
 
-  const handleCancel = () => {
-    setShowForm(false);
-    setEditingProducto(null);
+  const handleToggle = async (producto: Producto) => {
+    try {
+      await toggleMutation.mutateAsync({
+        id: producto.id,
+        activo: !producto.activo,
+      });
+      pushToast({
+        tone: producto.activo ? "warning" : "success",
+        message: producto.activo
+          ? `${producto.nombre} se desactivó.`
+          : `${producto.nombre} ahora está activo.`,
+      });
+    } catch (error) {
+      await handleError(error);
+    }
   };
 
-  if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-muted-foreground">Cargando productos...</div>
-      </div>
-    );
-  }
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    try {
+      await deleteMutation.mutateAsync(pendingDelete.id);
+      pushToast({
+        tone: "warning",
+        message: `${pendingDelete.nombre} eliminado.`,
+      });
+      setPendingDelete(null);
+    } catch (error) {
+      await handleError(error);
+    }
+  };
 
-  if (error) {
-    return (
-      <div className="p-6">
-        <div className="text-red-500">Error: {error.message}</div>
-      </div>
-    );
-  }
+  const currentInitialValues = useMemo(() => {
+    if (!selectedProducto) return undefined;
+    return {
+      nombre: selectedProducto.nombre,
+      sku: selectedProducto.sku ?? "",
+      activo: selectedProducto.activo,
+      uom_id: selectedProducto.uom_id,
+      marca_id: selectedProducto.marca_id ?? undefined,
+      categoria_id: selectedProducto.categoria_id ?? undefined,
+    };
+  }, [selectedProducto]);
 
   return (
-    <div className="p-6 min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Productos</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Gestiona el catálogo de productos del inventario
-            </p>
+    <AdminPageShell
+      title="Gestión de productos"
+      subtitle="Administra el catálogo y sincroniza referencias con marcas, categorías y unidades."
+      helper="CRUD completo con React Query"
+    >
+      {bannerMessage && (
+        <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+          <div className="flex items-center justify-between">
+            <span>{bannerMessage}</span>
+            <button
+              type="button"
+              className="text-xs underline"
+              onClick={() => setBannerMessage(null)}
+            >
+              Cerrar
+            </button>
           </div>
-          <button
-            onClick={() => {
-              setEditingProducto(null);
-              setShowForm(!showForm);
-            }}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-md transition-colors"
-          >
-            {showForm ? (
-              <>
-                <PackageX className="w-4 h-4" />
-                Cancelar
-              </>
-            ) : (
-              <>
-                <PackagePlus className="w-4 h-4" />
-                Nuevo Producto
-              </>
-            )}
-          </button>
         </div>
+      )}
 
-        {showForm && (
-          <div className="mb-6 p-6 bg-card border border-border rounded-lg">
-            <h2 className="text-lg font-semibold text-foreground mb-4">
-              {editingProducto ? 'Editar Producto' : 'Nuevo Producto'}
-            </h2>
-            <ProductoForm
-              onSubmit={editingProducto ? handleUpdate : handleCreate}
-              initialData={editingProducto}
-              onCancel={handleCancel}
-              categorias={categorias}
-              marcas={marcas}
-              uoms={uoms}
-            />
+      {listQuery.isError && (
+        <div className="rounded-2xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+          <div className="flex items-center justify-between">
+            <span>No se pudo cargar la tabla. Reintenta.</span>
+            <button
+              type="button"
+              className="text-xs underline"
+              onClick={() => listQuery.refetch()}
+            >
+              Reintentar
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
-        <ProductosTable
-          productos={productos || []}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          categorias={categorias}
-          marcas={marcas}
-          uoms={uoms}
-        />
-      </div>
-    </div>
+      <ProductoFilters
+        searchValue={searchValue}
+        onSearchChange={(value) => {
+          setSearchValue(value);
+          setPageIndex(0);
+        }}
+      />
+
+      <ProductoTable
+        data={filteredRows}
+        total={total}
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        searchValue={searchValue}
+        isLoading={listQuery.isLoading || listQuery.isFetching}
+        catalogs={catalogs}
+        onSearchChange={setSearchValue}
+        onPageChange={(page) => setPageIndex(page)}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          setPageIndex(0);
+        }}
+        onCreate={openCreateModal}
+        onEdit={openEditModal}
+        onToggleActive={handleToggle}
+        onDelete={(producto) => setPendingDelete(producto)}
+      />
+
+      <ProductoForm
+        isOpen={isFormOpen}
+        mode={formMode}
+        catalogs={catalogs}
+        initialValues={currentInitialValues}
+        loading={
+          formMode === "create"
+            ? createMutation.isPending
+            : updateMutation.isPending
+        }
+        errorMessage={formError}
+        onSubmit={handleSubmit}
+        onClose={() => {
+          setIsFormOpen(false);
+          resetFormState();
+        }}
+      />
+
+      <AdminConfirmDialog
+        isOpen={Boolean(pendingDelete)}
+        title="Eliminar producto"
+        description="Esta acción eliminará definitivamente el producto del catálogo."
+        confirmLabel="Eliminar"
+        tone="danger"
+        loading={deleteMutation.isPending}
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={confirmDelete}
+      />
+    </AdminPageShell>
   );
-}
+};
+
+const ProductosPage = () => (
+  <AdminToastProvider>
+    <ProductosPageContent />
+  </AdminToastProvider>
+);
+
+export default ProductosPage;

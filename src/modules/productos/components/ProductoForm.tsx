@@ -1,205 +1,259 @@
 "use client";
 
-import React, { useState, FormEvent } from 'react';
-import { Producto, ProductoCreate } from '../api';
+import { FormEvent, useMemo, useRef, useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
+import { AdminModal } from "@/modules/admin/components/AdminModal";
+import { ProductoCatalogs, ProductoFormState } from "../types";
 
-interface ProductoFormProps {
-  onSubmit: (data: ProductoCreate) => void;
-  initialData?: Producto | null;
-  onCancel?: () => void;
-  categorias: Array<{ id: number; nombre: string }>;
-  marcas: Array<{ id: number; nombre: string }>;
-  uoms: Array<{ id: number; nombre: string; simbolo: string }>;
-}
+type ProductoFormProps = {
+  isOpen: boolean;
+  mode: "create" | "edit";
+  catalogs: ProductoCatalogs;
+  initialValues?: ProductoFormState;
+  loading?: boolean;
+  errorMessage?: string | null;
+  onSubmit: (values: ProductoFormState) => void;
+  onClose: () => void;
+};
 
-export function ProductoForm({
+export const ProductoForm = ({
+  isOpen,
+  mode,
+  catalogs,
+  initialValues,
+  loading,
+  errorMessage,
   onSubmit,
-  initialData,
-  onCancel,
-  categorias,
-  marcas,
-  uoms,
-}: ProductoFormProps) {
-  const [formData, setFormData] = useState<ProductoCreate>({
-    nombre: initialData?.nombre || '',
-    sku: initialData?.sku || null,
-    activo: initialData?.activo ?? true,
-    marca_id: initialData?.marca_id || null,
-    categoria_id: initialData?.categoria_id || null,
-    uom_id: initialData?.uom_id || 0,
-  });
-
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const validate = (): boolean => {
-    const newErrors: Record<string, string> = {};
-    
-    if (!formData.nombre || formData.nombre.trim().length === 0) {
-      newErrors.nombre = 'El nombre es requerido';
-    }
-    
-    if (!formData.uom_id || formData.uom_id <= 0) {
-      newErrors.uom_id = 'La unidad de medida es requerida';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleFormSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    
-    if (!validate()) {
-      return;
-    }
-
-    // Limpiar datos
-    const cleanData: ProductoCreate = {
-      ...formData,
-      sku: formData.sku?.trim() || null,
-      marca_id: formData.marca_id || null,
-      categoria_id: formData.categoria_id || null,
-    };
-    
-    onSubmit(cleanData);
-    
-    if (!initialData) {
-      // Reset form
-      setFormData({
-        nombre: '',
-        sku: null,
-        activo: true,
-        marca_id: null,
-        categoria_id: null,
-        uom_id: 0,
-      });
-      setErrors({});
-    }
-  };
+  onClose,
+}: ProductoFormProps) => {
+  const formKey = useMemo(() => {
+    const base = initialValues
+      ? `${initialValues.nombre}-${initialValues.sku}-${initialValues.uom_id}-${initialValues.marca_id}-${initialValues.categoria_id}-${initialValues.activo}`
+      : "nuevo";
+    return `${mode}-${isOpen}-${base}`;
+  }, [initialValues, isOpen, mode]);
 
   return (
-    <form onSubmit={handleFormSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="nombre" className="block text-sm font-medium text-foreground">
-          Nombre del Producto <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="nombre"
-          value={formData.nombre}
-          onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-          className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
-          placeholder="Ej: Arroz Granel 25kg"
-        />
-        {errors.nombre && (
-          <p className="mt-1 text-sm text-red-500">{errors.nombre}</p>
-        )}
-      </div>
-
-      <div>
-        <label htmlFor="sku" className="block text-sm font-medium text-foreground">
-          SKU (Código)
-        </label>
-        <input
-          id="sku"
-          value={formData.sku || ''}
-          onChange={(e) => setFormData({ ...formData, sku: e.target.value || null })}
-          className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
-          placeholder="Ej: ARR-25KG-001"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="categoria_id" className="block text-sm font-medium text-foreground">
-            Categoría
-          </label>
-          <select
-            id="categoria_id"
-            value={formData.categoria_id || ''}
-            onChange={(e) => setFormData({ ...formData, categoria_id: e.target.value ? Number(e.target.value) : null })}
-            className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="">Sin categoría</option>
-            {categorias.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label htmlFor="marca_id" className="block text-sm font-medium text-foreground">
-            Marca
-          </label>
-          <select
-            id="marca_id"
-            value={formData.marca_id || ''}
-            onChange={(e) => setFormData({ ...formData, marca_id: e.target.value ? Number(e.target.value) : null })}
-            className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="">Sin marca</option>
-            {marcas.map((marca) => (
-              <option key={marca.id} value={marca.id}>
-                {marca.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div>
-        <label htmlFor="uom_id" className="block text-sm font-medium text-foreground">
-          Unidad de Medida <span className="text-red-500">*</span>
-        </label>
-        <select
-          id="uom_id"
-          value={formData.uom_id || ''}
-          onChange={(e) => setFormData({ ...formData, uom_id: Number(e.target.value) })}
-          className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
-        >
-          <option value="">Seleccione una unidad</option>
-          {uoms.map((uom) => (
-            <option key={uom.id} value={uom.id}>
-              {uom.nombre} ({uom.simbolo})
-            </option>
-          ))}
-        </select>
-        {errors.uom_id && (
-          <p className="mt-1 text-sm text-red-500">{errors.uom_id}</p>
-        )}
-      </div>
-
-      <div className="flex items-center">
-        <input
-          id="activo"
-          type="checkbox"
-          checked={formData.activo}
-          onChange={(e) => setFormData({ ...formData, activo: e.target.checked })}
-          className="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-ring"
-        />
-        <label htmlFor="activo" className="ml-2 block text-sm text-foreground">
-          Producto activo
-        </label>
-      </div>
-
-      <div className="flex gap-3 justify-end pt-4">
-        {onCancel && (
+    <AdminModal
+      isOpen={isOpen}
+      onClose={loading ? () => undefined : onClose}
+      title={mode === "create" ? "Nuevo producto" : "Editar producto"}
+      description="Completa los datos obligatorios para mantener la integridad del inventario."
+      footer={
+        <div className="flex items-center justify-end gap-3">
           <button
             type="button"
-            onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-foreground bg-muted hover:bg-muted/80 rounded-md transition-colors"
+            className="rounded-full border border-slate-700/80 px-4 py-2 text-sm text-slate-200 hover:border-slate-500 disabled:opacity-50"
+            onClick={onClose}
+            disabled={loading}
           >
             Cancelar
           </button>
-        )}
-        <button
-          type="submit"
-          className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-md transition-colors"
-        >
-          {initialData ? 'Actualizar' : 'Crear'} Producto
-        </button>
+          <button
+            type="submit"
+            form="producto-form"
+            className="inline-flex items-center gap-2 rounded-full bg-emerald-500/80 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
+            disabled={loading}
+          >
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {mode === "create" ? "Crear producto" : "Guardar cambios"}
+          </button>
+        </div>
+      }
+    >
+      {isOpen && (
+        <ProductoFormFields
+          key={formKey}
+          catalogs={catalogs}
+          initialValues={initialValues}
+          loading={Boolean(loading)}
+          errorMessage={errorMessage}
+          onSubmit={onSubmit}
+        />
+      )}
+    </AdminModal>
+  );
+};
+
+const defaultState: ProductoFormState = {
+  nombre: "",
+  sku: "",
+  activo: true,
+};
+
+type ProductoFormFieldsProps = {
+  catalogs: ProductoCatalogs;
+  initialValues?: ProductoFormState;
+  loading: boolean;
+  errorMessage?: string | null;
+  onSubmit: (values: ProductoFormState) => void;
+};
+
+const ProductoFormFields = ({
+  catalogs,
+  initialValues,
+  loading,
+  errorMessage,
+  onSubmit,
+}: ProductoFormFieldsProps) => {
+  const [values, setValues] = useState<ProductoFormState>(
+    () => ({
+      ...defaultState,
+      ...initialValues,
+    })
+  );
+  const [localError, setLocalError] = useState<string | null>(null);
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    nameInputRef.current?.focus();
+  }, []);
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmedName = values.nombre.trim();
+    if (trimmedName.length < 1) {
+      setLocalError("El nombre es obligatorio.");
+      return;
+    }
+    if (!values.uom_id) {
+      setLocalError("Debes seleccionar una unidad de medida.");
+      return;
+    }
+    setLocalError(null);
+    onSubmit({
+      ...values,
+      nombre: trimmedName,
+      sku: values.sku.trim(),
+    });
+  };
+
+  const renderSelect = (
+    label: string,
+    field: keyof Pick<
+      ProductoFormState,
+      "uom_id" | "marca_id" | "categoria_id"
+    >,
+    options: { id: number; nombre: string }[],
+    required?: boolean,
+    placeholder?: string
+  ) => (
+    <div className="space-y-1">
+      <label className="text-xs uppercase tracking-[0.3em] text-slate-400">
+        {label}
+        {required && <span className="text-rose-300"> *</span>}
+      </label>
+      <select
+        className="w-full rounded-2xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-sm text-slate-100 focus:border-slate-300 focus:outline-none"
+        value={values[field] ?? ""}
+        onChange={(event) =>
+          setValues((prev) => ({
+            ...prev,
+            [field]: event.target.value ? Number(event.target.value) : undefined,
+          }))
+        }
+        aria-label={label}
+        disabled={loading}
+      >
+        <option value="">{placeholder ?? "Selecciona una opción"}</option>
+        {options.map((option) => (
+          <option key={option.id} value={option.id}>
+            {option.nombre}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+
+  return (
+    <form
+      id="producto-form"
+      onSubmit={handleSubmit}
+      className="space-y-6"
+    >
+      <div className="space-y-2">
+        <label className="text-xs uppercase tracking-[0.3em] text-slate-400">
+          Nombre *
+        </label>
+        <input
+          ref={nameInputRef}
+          className="w-full rounded-2xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-300 focus:outline-none"
+          placeholder="Ej. Laptop X"
+          value={values.nombre}
+          onChange={(event) =>
+            setValues((prev) => ({ ...prev, nombre: event.target.value }))
+          }
+          disabled={loading}
+        />
       </div>
+
+      <div className="space-y-1">
+        <label className="text-xs uppercase tracking-[0.3em] text-slate-400">
+          SKU (opcional)
+        </label>
+        <input
+          className="w-full rounded-2xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-300 focus:outline-none"
+          placeholder="LPX-001"
+          value={values.sku}
+          onChange={(event) =>
+            setValues((prev) => ({ ...prev, sku: event.target.value }))
+          }
+          disabled={loading}
+        />
+        {values.sku && (
+          <p className="text-xs text-slate-400">
+            SKU en mayúsculas: {values.sku.toUpperCase()}
+          </p>
+        )}
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        {renderSelect(
+          "Unidad de medida",
+          "uom_id",
+          catalogs.uoms,
+          true,
+          "Selecciona la unidad"
+        )}
+        {renderSelect(
+          "Marca",
+          "marca_id",
+          catalogs.marcas,
+          false,
+          "Opcional"
+        )}
+        {renderSelect(
+          "Categoría",
+          "categoria_id",
+          catalogs.categorias,
+          false,
+          "Opcional"
+        )}
+      </div>
+
+      <label className="flex items-center gap-3">
+        <input
+          type="checkbox"
+          className="h-4 w-4 rounded border-slate-700 bg-slate-900 text-emerald-500 focus:ring-emerald-500"
+          checked={values.activo}
+          onChange={(event) =>
+            setValues((prev) => ({
+              ...prev,
+              activo: event.target.checked,
+            }))
+          }
+          disabled={loading}
+        />
+        <span className="text-sm text-slate-200">
+          Activo por defecto (aparece en catálogos y movimientos)
+        </span>
+      </label>
+
+      {(localError || errorMessage) && (
+        <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+          {localError ?? errorMessage}
+        </div>
+      )}
     </form>
   );
-}
+};
