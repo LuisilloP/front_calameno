@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import {
   SidebarNavigation,
   SidebarNavigationProps,
@@ -23,31 +23,12 @@ import {
 import { useTheme } from "next-themes";
 
 export default function ProductSidebar() {
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const resolvedTheme = theme === "dark" ? "dark" : "light";
+  const { theme, setTheme, resolvedTheme: nextResolvedTheme } = useTheme();
+  const resolvedTheme = (nextResolvedTheme ?? theme) === "dark" ? "dark" : "light";
 
   const handleThemeToggle = useCallback(() => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");
   }, [resolvedTheme, setTheme]);
-
-  if (!mounted) {
-    return (
-      <aside className="flex h-screen w-full flex-col overflow-hidden border border-slate-800/60 bg-slate-950/80 lg:max-w-xs">
-        <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center text-slate-500">
-          <span className="text-xs uppercase tracking-[0.3em] text-slate-600">
-            Calameno
-          </span>
-          <p className="text-xs text-slate-500">Inicializando panel...</p>
-        </div>
-      </aside>
-    );
-  }
 
   const sidebarProps = useMemo<SidebarNavigationProps>(() => {
     const coreItems = [
@@ -58,34 +39,17 @@ export default function ProductSidebar() {
         href: "/",
       },
       {
-        id: "inventory",
-        label: "Inventario y stock",
-        icon: WarehouseIcon,
-        children: [
-          {
-            id: "inventory-products",
-            label: "Catalogo de productos",
-            href: "/products",
-          },
-          {
-            id: "inventory-locations",
-            label: "Ubicaciones y stock",
-            href: "/locations",
-          },
-        ],
-      },
-      {
         id: "insights",
         label: "Vistas y reportes",
         icon: EyeIcon,
         href: "/vistas",
       },
-      {
-        id: "support",
-        label: "Centro de ayuda",
-        icon: CircleQuestionMarkIcon,
-        href: "/help",
-      },
+      // {
+      //   id: "support",
+      //   label: "Centro de ayuda",
+      //   icon: CircleQuestionMarkIcon,
+      //   href: "/help",
+      // },
     ];
 
     const operationsItems = [
@@ -98,6 +62,12 @@ export default function ProductSidebar() {
     ];
 
     const adminItems = [
+      {
+        id: "admin-productos",
+        label: "Productos",
+        icon: PackagePlusIcon,
+        href: "/admin/productos",
+      },
       {
         id: "admin-locaciones",
         label: "Locaciones",
@@ -121,12 +91,6 @@ export default function ProductSidebar() {
         label: "Personas",
         icon: Users2,
         href: "/admin/personas",
-      },
-      {
-        id: "admin-preferencias",
-        label: "Preferencias",
-        icon: Settings2Icon,
-        href: "/settings",
       },
     ];
 

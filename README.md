@@ -90,6 +90,26 @@ Para cada ruta (/admin/locaciones, /admin/categorias, /admin/proveedores, /admin
 5. **Paginacion**: cambia a la pagina 2 con distintos limites (10/25/50) y revisa en la ventana de red que la peticion use skip = pageIndex * limit.
 
 Tambien valida los estados vacios, skeleton loaders y que los codigos *_duplicate y *_not_found disparan mensajes especificos; el resto de errores activa el banner "No se pudo completar la operacion".
+
+## Gestion de Productos
+
+La vista administrativa de productos vive en `/admin/productos` y sigue la misma arquitectura feature-driven.
+
+### Flujo de trabajo
+
+1. **Tabla**: usa paginacion (`skip/limit`) y filtros locales por nombre/SKU. Las columnas muestran unidad, marca, categoria y estado.
+2. **Catálogos**: los selectores del formulario se nutren de `/uoms`, `/marcas` y `/categorias`, cacheados con React Query.
+3. **Formulario**: `nombre` obligatorio, `sku` opcional (se sugiere en mayusculas), `uom_id` requerido, `marca_id`/`categoria_id` opcionales y `activo` encendido por defecto.
+4. **Acciones**: editar, eliminar y togglear activos se ejecutan inline con confirmaciones y toasts coherentes.
+5. **Errores**: los códigos `producto_sku_duplicate`, `*_not_found` y `*_error` muestran mensajes específicos en banners/formularios con opciones para reintentar o refrescar.
+
+### Pruebas manuales sugeridas
+
+1. Crear un producto con SKU nuevo; confirmar que aparece en la tabla.
+2. Repetir el SKU para validar el mensaje “SKU ya registrado”.
+3. Editar un producto cambiando UOM/Marca/Categoría y verificar la persistencia tras el refetch.
+4. Usar el toggle de estado para desactivar y volver a activar el producto.
+5. Eliminar un producto y confirmar que la tabla se actualiza sin errores 404.
 ## Guia de layout
 
 La aplicacion usa `src/components/LayoutContent.tsx` como cascaron global. Este componente fija la barra lateral (`src/components/product_bar.tsx`) en un <aside> pegado al tope y expone un <main> central con padding consistente. Cualquier vista en `src/app/**/page.tsx` se renderiza dentro de ese `main`, por lo que solo necesita preocuparse por su propio contenido (usa `AdminPageShell` u otro contenedor si quieres titulares/secciones).
