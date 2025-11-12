@@ -1,10 +1,23 @@
-export const BASE_URL =
-  process.env.VITE_API_URL ?? "http://localhost:8000/api/v1";
+const resolveBaseUrl = () => {
+  const candidates = [
+    process.env.VITE_API_URL,
+    process.env.NEXT_PUBLIC_BASE_URL,
+    "http://localhost:8000/api/v1",
+  ];
 
-const sanitizeBaseUrl = () =>
-  BASE_URL.endsWith("/") ? BASE_URL.slice(0, -1) : BASE_URL;
+  const raw = candidates.find(
+    (value): value is string => typeof value === "string" && value.trim().length > 0
+  );
+
+  const normalized = raw ?? "http://localhost:8000/api/v1";
+  return normalized.endsWith("/")
+    ? normalized.slice(0, -1)
+    : normalized;
+};
+
+export const BASE_URL = resolveBaseUrl();
 
 export const buildUrl = (path: string) => {
-  const cleanBase = sanitizeBaseUrl();
+  const cleanBase = BASE_URL;
   return `${cleanBase}${path.startsWith("/") ? path : `/${path}`}`;
 };
