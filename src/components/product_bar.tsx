@@ -111,6 +111,12 @@ export default function ProductSidebar() {
         href: "/admin/categorias",
       },
       {
+        id: "admin-marcas",
+        label: "Marcas",
+        icon: PackageMinusIcon,
+        href: "/admin/marcas",
+      },
+      {
         id: "admin-proveedores",
         label: "Proveedores",
         icon: TruckIcon,
