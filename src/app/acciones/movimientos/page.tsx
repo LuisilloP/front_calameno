@@ -1,12 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  AlertCircle,
-  CheckCircle2,
-  Loader2,
-  RefreshCcw,
-} from "lucide-react";
+import { AlertCircle, Loader2, RefreshCcw } from "lucide-react";
 import {
   MOVEMENT_TYPE_DEFINITIONS,
   MovementFormErrors,
@@ -23,6 +18,7 @@ import {
   ProductoCatalogItem,
   movementsApi,
 } from "@/services/movementsApi";
+import { PopupAlert, MovementAlertData } from "@/components/ui/PopupAlert";
 
 type CatalogOption = {
   id: number;
@@ -281,8 +277,8 @@ const MovementRegistrationPage = () => {
   >("idle");
   const [apiError, setApiError] = useState<ApiErrorDetail | null>(null);
   const [lastMovement, setLastMovement] = useState<MovimientoOut | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
+  const [movementAlert, setMovementAlert] = useState<MovementAlertData | null>(null);
 
   const selectedProduct = useMemo(
     () => productos.data?.find((p) => p.id === form.productoId),
@@ -353,6 +349,12 @@ const MovementRegistrationPage = () => {
     }));
   }, [personas.data]);
 
+  const personasById = useMemo(() => {
+    const map = new Map<number, string>();
+    personas.data?.forEach((p) => map.set(p.id, `${p.nombre} ${p.apellidos ?? ""}`.trim()));
+    return map;
+  }, [personas.data]);
+
   const proveedorOptions = useMemo<CatalogOption[] | undefined>(() => {
     if (!proveedores.data) return undefined;
     return proveedores.data.map((p) => ({
@@ -362,11 +364,13 @@ const MovementRegistrationPage = () => {
     }));
   }, [proveedores.data]);
 
-  useEffect(() => {
-    if (!toastMessage) return;
-    const timer = window.setTimeout(() => setToastMessage(null), 4000);
-    return () => window.clearTimeout(timer);
-  }, [toastMessage]);
+  const proveedoresById = useMemo(() => {
+    const map = new Map<number, string>();
+    proveedores.data?.forEach((pr) => map.set(pr.id, pr.nombre));
+    return map;
+  }, [proveedores.data]);
+
+  // popup toasts are handled by ToastProvider via useToast
 
   const handleTipoChange = (tipo: MovementType) => {
     const rules = resolveMovementRules(tipo);
@@ -400,7 +404,30 @@ const MovementRegistrationPage = () => {
       setForm({ ...initialFormState });
       setErrors({});
       setSubmitState("success");
-      setToastMessage("Movimiento registrado correctamente");
+      // Build alert data
+      if (movimiento.tipo === "ingreso" || movimiento.tipo === "uso") {
+        const alert: MovementAlertData = {
+          tipo: movimiento.tipo === "ingreso" ? "ingreso" : "uso",
+          producto: productosById.get(movimiento.producto_id) ?? `ID ${movimiento.producto_id}`,
+          cantidad: movimiento.cantidad,
+          unidad: productUnitLabel || undefined,
+          locacionDestino: movimiento.to_locacion_id
+            ? locacionesById.get(movimiento.to_locacion_id) ?? `ID ${movimiento.to_locacion_id}`
+            : undefined,
+          locacionOrigen: movimiento.from_locacion_id
+            ? locacionesById.get(movimiento.from_locacion_id) ?? `ID ${movimiento.from_locacion_id}`
+            : undefined,
+          persona: movimiento.persona_id
+            ? personasById.get(movimiento.persona_id) ?? `ID ${movimiento.persona_id}`
+            : undefined,
+          proveedor: movimiento.proveedor_id
+            ? proveedoresById.get(movimiento.proveedor_id) ?? `ID ${movimiento.proveedor_id}`
+            : undefined,
+          nota: movimiento.nota || undefined,
+          fechaIso: movimiento.created_at,
+        };
+        setMovementAlert(alert);
+      }
       setHasTriedSubmit(false);
     } catch (error) {
       const apiErr =
@@ -464,12 +491,7 @@ const MovementRegistrationPage = () => {
             </div>
           </div>
 
-          {toastMessage && (
-            <div className="flex items-center gap-2 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-200">
-              <CheckCircle2 className="h-4 w-4" />
-              {toastMessage}
-            </div>
-          )}
+          {/* Popup toast will appear on success; inline banner removed */}
 
           {showValidationBanner && (
             <div className="flex items-center gap-2 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm text-amber-100">
@@ -509,6 +531,13 @@ const MovementRegistrationPage = () => {
             </div>
           )}
         </header>
+
+        {movementAlert && (
+          <PopupAlert
+            data={movementAlert}
+            onClose={() => setMovementAlert(null)}
+          />
+        )}
 
         <section className="grid gap-6 lg:grid-cols-[2fr,1fr]">
           <form
