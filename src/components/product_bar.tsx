@@ -39,12 +39,6 @@ export default function ProductSidebar() {
         href: "/",
       },
       {
-        id: "inventory-weekly",
-        label: "Inventario semanal",
-        icon: WarehouseIcon,
-        href: "/inventory-weekly",
-      },
-      {
         id: "insights",
         label: "Vistas y reportes",
         icon: EyeIcon,

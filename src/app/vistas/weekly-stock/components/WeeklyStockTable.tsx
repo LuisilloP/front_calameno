@@ -1,8 +1,13 @@
 "use client";
 
-import React from 'react';
-import { WeeklyProduct } from '../types';
-import { WEEK_DAYS, getDayLabel, formatMovement, getStockColor } from '../utils';
+import React from "react";
+import { WeeklyProduct } from "../types";
+import {
+  WEEK_DAYS,
+  getDayLabel,
+  formatMovement,
+  getStockColor,
+} from "../utils";
 
 interface WeeklyStockTableProps {
   products: WeeklyProduct[];
@@ -17,7 +22,7 @@ export const WeeklyStockTable: React.FC<WeeklyStockTableProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
+      <div className="rounded-2xl border border-slate-800/50 bg-slate-950/30 px-6 py-8 text-center text-slate-400">
         Cargando datos...
       </div>
     );
@@ -25,91 +30,91 @@ export const WeeklyStockTable: React.FC<WeeklyStockTableProps> = ({
 
   if (products.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        No hay productos en esta categoría
+      <div className="rounded-2xl border border-slate-800/50 bg-slate-950/30 px-6 py-8 text-center text-slate-400">
+        No hay productos en esta categoria.
       </div>
     );
   }
 
   const totalStock = products.reduce(
-    (sum, p) => sum + p.final_stock_realtime,
-    0
+    (sum, product) => sum + product.final_stock_realtime,
+    0,
   );
 
   return (
     <div className="space-y-4">
-      {/* Header con totales */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-foreground">
-          {categoryName}
-        </h3>
-        <div className="text-sm text-muted-foreground">
-          <span className="font-medium">{products.length}</span> productos |{' '}
-          <span className="font-medium">Stock total: {totalStock.toFixed(2)}</span>
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/60 bg-slate-950/40 px-4 py-3">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.35em] text-slate-500">
+            Categoria
+          </p>
+          <h3 className="text-xl font-semibold text-white">{categoryName}</h3>
+        </div>
+        <div className="flex flex-wrap items-center gap-3 text-xs">
+          <span className="rounded-full border border-slate-700/60 bg-slate-950/40 px-3 py-1 text-slate-300">
+            Productos:{" "}
+            <span className="font-semibold text-white">
+              {products.length}
+            </span>
+          </span>
+          <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-emerald-200">
+            Stock total:{" "}
+            <span className="font-semibold text-white">
+              {totalStock.toFixed(2)}
+            </span>
+          </span>
         </div>
       </div>
 
-      {/* Tabla */}
-      <div className="overflow-x-auto border border-border rounded-lg">
-        <table className="min-w-full divide-y divide-border">
-          <thead className="bg-muted">
+      <div className="overflow-x-auto rounded-2xl border border-slate-800/60 bg-slate-950/30">
+        <table className="min-w-full divide-y divide-slate-800/60 text-sm text-slate-200">
+          <thead className="bg-slate-900/70 text-[11px] uppercase tracking-[0.2em] text-slate-500">
             <tr>
-              <th className="sticky left-0 z-10 bg-muted px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <th className="sticky left-0 z-10 bg-slate-900/80 px-4 py-3 text-left">
                 Producto
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Marca
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Proveedor
-              </th>
-              <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Stock Inicial
-              </th>
+              <th className="px-4 py-3 text-left">Marca</th>
+              <th className="px-4 py-3 text-left">Proveedor</th>
+              <th className="px-4 py-3 text-center">Stock inicial</th>
               {WEEK_DAYS.map((day) => (
-                <th
-                  key={day}
-                  className="px-4 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider"
-                >
+                <th key={day} className="px-4 py-3 text-center">
                   {getDayLabel(day)}
                 </th>
               ))}
-              <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider bg-primary/10">
-                Stock Final
-              </th>
+              <th className="px-4 py-3 text-center text-sky-300">Stock final</th>
             </tr>
           </thead>
-          <tbody className="bg-card divide-y divide-border">
+          <tbody className="divide-y divide-slate-800/60 bg-slate-950/30">
             {products.map((product) => (
-              <tr key={product.id} className="hover:bg-muted/50">
-                <td className="sticky left-0 z-10 bg-card px-4 py-3 whitespace-nowrap text-sm font-medium text-card-foreground">
+              <tr
+                key={product.id}
+                className="text-sm text-slate-300 transition hover:bg-slate-900/40"
+              >
+                <td className="sticky left-0 z-10 bg-slate-950/60 px-4 py-3 font-semibold text-white backdrop-blur">
                   {product.name}
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-muted-foreground">
-                  {product.brand || '-'}
+                <td className="px-4 py-3 text-slate-400">
+                  {product.brand || "-"}
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-muted-foreground">
-                  {product.supplier || '-'}
+                <td className="px-4 py-3 text-slate-400">
+                  {product.supplier || "-"}
                 </td>
-                <td className="px-4 py-3 text-center text-sm text-card-foreground">
+                <td className="px-4 py-3 text-center text-white">
                   {product.initial_stock.toFixed(2)}
                 </td>
                 {WEEK_DAYS.map((day) => {
                   const value = product.daily_movements[day];
                   return (
-                    <td
-                      key={day}
-                      className="px-4 py-3 text-center text-sm font-mono"
-                    >
+                    <td key={day} className="px-4 py-3 text-center">
                       <span
-                        className={`inline-block px-2 py-1 rounded ${
+                        className={`inline-flex items-center justify-center rounded-full border px-2 py-0.5 text-[11px] font-semibold ${
                           value === null
-                            ? 'text-muted-foreground'
+                            ? "border-slate-700/70 text-slate-500"
                             : value > 0
-                            ? 'text-emerald-400'
-                            : value < 0
-                            ? 'text-rose-400'
-                            : 'text-muted-foreground'
+                              ? "border-emerald-500/50 text-emerald-300"
+                              : value < 0
+                                ? "border-rose-500/50 text-rose-300"
+                                : "border-slate-700/70 text-slate-400"
                         }`}
                       >
                         {formatMovement(value)}
@@ -117,10 +122,10 @@ export const WeeklyStockTable: React.FC<WeeklyStockTableProps> = ({
                     </td>
                   );
                 })}
-                <td className="px-4 py-3 text-center text-sm font-semibold bg-primary/5">
+                <td className="px-4 py-3 text-center">
                   <span
-                    className={`inline-block px-3 py-1 rounded-full ${getStockColor(
-                      product.final_stock_realtime
+                    className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-semibold ${getStockColor(
+                      product.final_stock_realtime,
                     )}`}
                   >
                     {product.final_stock_realtime.toFixed(2)}
