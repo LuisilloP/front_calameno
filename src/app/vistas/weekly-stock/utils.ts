@@ -23,6 +23,17 @@ export function formatDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+export function formatWeekRange(startIso: string): string {
+  const start = parseDate(startIso);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  const formatter = new Intl.DateTimeFormat('es-ES', {
+    day: '2-digit',
+    month: 'short',
+  });
+  return `${formatter.format(start)} - ${formatter.format(end)}`;
+}
+
 /**
  * Parsea fecha desde YYYY-MM-DD
  */

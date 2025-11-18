@@ -9,6 +9,7 @@ import { CategoryTabs } from "./CategoryTabs";
 import { CategoryMultiSelect } from "./CategoryMultiSelect";
 import { WeeklyGrid } from "./WeeklyGrid";
 import { getWeekDates, normalizeIsoToMonday } from "../utils/date";
+import * as XLSX from "xlsx";
 
 type InventoryWeeklyClientProps = {
   initialCategories: InventoryCategory[];
@@ -26,9 +27,6 @@ const ensureSelection = (
   }
   return unique;
 };
-
-const toCsvValue = (value: string | number) =>
-  `"${String(value).replace(/"/g, '""')}"`;
 
 export const InventoryWeeklyClient = ({
   initialCategories,
@@ -106,21 +104,34 @@ export const InventoryWeeklyClient = ({
 
   const handleExport = () => {
     if (!weeklyData.length) return;
-    const header = ["Producto", ...weekDays.map((day) => day.iso)];
-    const rows = weeklyData.map((row) => [
-      row.productoNombre,
-      ...row.dias.map((day) => `${day.stock} (${day.estado})`),
-    ]);
-    const csv = [header, ...rows]
-      .map((line) => line.map(toCsvValue).join(","))
-      .join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `inventario-semanal-${weekStart}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+    const categoryById = new Map(
+      categories.map((category) => [category.id, category.nombre])
+    );
+
+    const header = [
+      "Categoria",
+      "Producto",
+      "Stock inicial",
+      ...weekDays.map((day) => day.weekday || day.label || day.iso),
+      "Stock final",
+    ];
+
+    const rows = weeklyData.map((row) => {
+      const firstDay = row.dias[0];
+      const lastDay = row.dias[row.dias.length - 1];
+      return [
+        categoryById.get(row.categoriaId) ?? `Categoria #${row.categoriaId}`,
+        row.productoNombre,
+        firstDay?.stock ?? "",
+        ...row.dias.map((day) => day.stock ?? ""),
+        lastDay?.stock ?? "",
+      ];
+    });
+
+    const worksheet = XLSX.utils.aoa_to_sheet([header, ...rows]);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Inventario semanal");
+    XLSX.writeFile(workbook, `inventario-semanal-${weekStart}.xlsx`);
   };
 
   const activeCategory = categories.find(

@@ -11,13 +11,11 @@ import {
 
 interface WeeklyStockTableProps {
   products: WeeklyProduct[];
-  categoryName: string;
   isLoading?: boolean;
 }
 
 export const WeeklyStockTable: React.FC<WeeklyStockTableProps> = ({
   products,
-  categoryName,
   isLoading = false,
 }) => {
   if (isLoading) {
@@ -36,36 +34,8 @@ export const WeeklyStockTable: React.FC<WeeklyStockTableProps> = ({
     );
   }
 
-  const totalStock = products.reduce(
-    (sum, product) => sum + product.final_stock_realtime,
-    0,
-  );
-
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800/60 bg-slate-950/40 px-4 py-3">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.35em] text-slate-500">
-            Categoria
-          </p>
-          <h3 className="text-xl font-semibold text-white">{categoryName}</h3>
-        </div>
-        <div className="flex flex-wrap items-center gap-3 text-xs">
-          <span className="rounded-full border border-slate-700/60 bg-slate-950/40 px-3 py-1 text-slate-300">
-            Productos:{" "}
-            <span className="font-semibold text-white">
-              {products.length}
-            </span>
-          </span>
-          <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-emerald-200">
-            Stock total:{" "}
-            <span className="font-semibold text-white">
-              {totalStock.toFixed(2)}
-            </span>
-          </span>
-        </div>
-      </div>
-
       <div className="overflow-x-auto rounded-2xl border border-slate-800/60 bg-slate-950/30">
         <table className="min-w-full divide-y divide-slate-800/60 text-sm text-slate-200">
           <thead className="bg-slate-900/70 text-[11px] uppercase tracking-[0.2em] text-slate-500">

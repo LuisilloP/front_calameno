@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Download } from "lucide-react";
 import { Category, WeeklyStockResponse } from "./types";
 import { WeeklyStockService } from "./service";
-import { getMonday, formatDate } from "./utils";
+import { getMonday, formatDate, formatWeekRange } from "./utils";
 import { CategorySelector } from "./components/CategorySelector";
 import { WeekPicker } from "./components/WeekPicker";
 import { WeeklyStockTable } from "./components/WeeklyStockTable";
+import { WeeklyStockExporter } from "./components/WeeklyStockExporter";
 
 const weekLabelFormatter = new Intl.DateTimeFormat("es-AR", {
   day: "2-digit",
@@ -76,13 +76,10 @@ export default function WeeklyStockPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [weekStart, selectedCategoryIds, mounted]);
 
-  const handleExportCSV = () => {
-    WeeklyStockService.downloadCSV(weekStart, selectedCategoryIds);
-  };
-
   const formattedWeekLabel = weekStart
     ? weekLabelFormatter.format(new Date(`${weekStart}T00:00:00`))
     : "Semana sin seleccionar";
+  const formattedWeekRange = weekStart ? formatWeekRange(weekStart) : "";
 
   const selectedCategoriesCount = selectedCategoryIds.length;
   const totalProducts =
@@ -144,14 +141,7 @@ export default function WeeklyStockPage() {
               )}
             </div>
           </div>
-          <button
-            onClick={handleExportCSV}
-            disabled={!data || loading}
-            className="group inline-flex items-center gap-2 rounded-2xl border border-sky-500/40 bg-sky-500/10 px-5 py-3 text-sm font-semibold text-sky-100 shadow-[0_15px_35px_rgba(14,165,233,0.25)] transition hover:-translate-y-0.5 hover:border-sky-400 hover:bg-sky-500/20 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Download className="h-4 w-4 transition group-hover:scale-105" />
-            Exportar CSV
-          </button>
+          <WeeklyStockExporter data={data} weekStart={weekStart} disabled={loading} />
         </div>
       </header>
 
@@ -229,9 +219,42 @@ export default function WeeklyStockPage() {
               key={category.category_id}
               className="rounded-2xl border border-slate-800/60 bg-slate-950/30 p-4 shadow-[0_18px_35px_rgba(2,6,23,0.5)]"
             >
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800/60 pb-4">
+                <div className="space-y-1">
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                    Inventario de
+                  </p>
+                  <h3 className="text-2xl font-semibold text-white">
+                    {category.category_name}
+                  </h3>
+                  {formattedWeekRange && (
+                    <p className="text-sm text-slate-400">
+                      Semana {formattedWeekRange}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  <span className="rounded-full border border-slate-700/60 bg-slate-950/40 px-3 py-1 text-slate-300">
+                    Productos:{" "}
+                    <span className="font-semibold text-white">
+                      {category.products.length}
+                    </span>
+                  </span>
+                  <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-emerald-200">
+                    Stock total:{" "}
+                    <span className="font-semibold text-white">
+                      {category.products
+                        .reduce(
+                          (sum, product) => sum + product.final_stock_realtime,
+                          0,
+                        )
+                        .toFixed(2)}
+                    </span>
+                  </span>
+                </div>
+              </div>
               <WeeklyStockTable
                 products={category.products}
-                categoryName={category.category_name}
               />
             </section>
           ))}
