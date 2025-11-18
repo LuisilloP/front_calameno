@@ -81,6 +81,13 @@ const CatalogAutocomplete = ({
   const [isTyping, setIsTyping] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
+  const handleSelect = (opt: CatalogOption) => {
+    onChange(opt.id);
+    setQuery(opt.label);
+    setIsTyping(false);
+    setOpen(false);
+  };
+
   useEffect(() => {
     const handleClick = (event: MouseEvent) => {
       if (
@@ -122,7 +129,7 @@ const CatalogAutocomplete = ({
       >
         <div className="flex items-center gap-2">
           <input
-            className="w-full bg-transparent text-sm text-slate-50 placeholder:text-slate-500 focus:outline-none"
+            className="w-full bg-transparent text-sm text-slate-50 placeholder:text-slate-500 focus:outline-none cursor-pointer"
             placeholder={placeholder}
             value={isTyping ? query : selected?.label ?? ""}
             disabled={disabled || status !== "ready"}
@@ -203,12 +210,11 @@ const CatalogAutocomplete = ({
                   "flex w-full flex-col px-4 py-2 text-left text-sm hover:bg-slate-800/60",
                   value === opt.id && "bg-slate-800/80 text-slate-50"
                 )}
-                onClick={() => {
-                  onChange(opt.id);
-                  setQuery(opt.label);
-                  setIsTyping(false);
-                  setOpen(false);
+                onMouseDown={(event) => {
+                  event.preventDefault(); // evita que el blur cierre antes de seleccionar
+                  handleSelect(opt);
                 }}
+                onClick={() => handleSelect(opt)}
               >
                 <span className="font-semibold text-slate-100">
                   {opt.label}
@@ -446,7 +452,7 @@ const MovementRegistrationPage = () => {
   const rules = resolveMovementRules(form.tipo);
 
   return (
-    <main className="min-h-screen bg-slate-950/95 p-6 text-slate-50">
+    <main className="min-h-screen bg-slate-950/95 p-6 text-slate-50 [button:cursor-pointer] [input:cursor-pointer]">
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
         <header className="flex flex-col gap-2 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 shadow-2xl shadow-slate-900/50">
           <div className="flex flex-wrap items-center justify-between gap-3">

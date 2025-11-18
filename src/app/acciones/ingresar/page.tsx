@@ -7,7 +7,7 @@ import { PopupAlert, MovementAlertData } from "@/components/ui/PopupAlert";
 export default function IngresarProductosPage() {
   const [alert, setAlert] = useState<MovementAlertData | null>(null);
   return (
-    <main className="p-6 min-h-screen">
+    <main className="p-6 min-h-screen [button:cursor-pointer] [input:cursor-pointer]">
       <h1 className="text-2xl font-bold mb-6 text-foreground">
         Ingresar Productos
       </h1>

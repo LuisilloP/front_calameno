@@ -83,7 +83,10 @@ export const SearchableSelect = ({
   };
 
   return (
-    <div className={`flex flex-col gap-1 ${className}`} ref={containerRef}>
+    <div
+      className={`flex flex-col gap-1 ${className} [button:cursor-pointer] [input:cursor-pointer]`}
+      ref={containerRef}
+    >
       {label && (
         <label className="text-xs font-semibold uppercase tracking-wide text-slate-400">
           {label}
