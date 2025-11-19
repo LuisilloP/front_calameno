@@ -9,8 +9,8 @@ export type MovementAlertData = {
   producto: string;
   cantidad: number | string;
   unidad?: string;
-  locacionDestino?: string; // para ingreso
-  locacionOrigen?: string; // para egreso (uso)
+  locacionDestino?: string; // ingreso o destino de uso
+  locacionOrigen?: string; // bodega central en usos
   persona?: string;
   proveedor?: string;
   nota?: string;
@@ -54,10 +54,14 @@ export function PopupAlert({ data, onClose, autoCloseMs = 6000 }: PopupAlertProp
   const heading = isIngreso
     ? "Producto ingresado correctamente"
     : "Producto egresado correctamente";
-  const locacionLabel = isIngreso ? data.locacionDestino : data.locacionOrigen;
+  const locacionLabel = isIngreso
+    ? data.locacionDestino
+    : data.locacionDestino ?? data.locacionOrigen;
   const locacionPrefix = isIngreso
-    ? "Ubicación destino"
-    : "Área (locación origen)";
+    ? "Bodega destino"
+    : data.locacionDestino
+        ? "Consumido en"
+        : "Bodega origen";
 
   const accentBorder = isIngreso
     ? "border-emerald-500/60"

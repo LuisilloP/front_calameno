@@ -5,13 +5,14 @@ import {
   resolveMovementRules,
   validateMovementForm,
 } from "@/lib/movements/form";
+import { CENTRAL_LOCATION_ID } from "@/config/warehouse";
 
 const baseForm: MovementFormState = {
   tipo: "ingreso",
   productoId: 10,
   quantity: "5",
   fromLocationId: undefined,
-  toLocationId: 1,
+  toLocationId: CENTRAL_LOCATION_ID,
   personaId: undefined,
   proveedorId: undefined,
   nota: "",
@@ -19,7 +20,7 @@ const baseForm: MovementFormState = {
 };
 
 describe("movement form validation", () => {
-  it("requires producto, cantidad y confirmación de unidad", () => {
+  it("requires producto, cantidad y confirmacion de unidad", () => {
     const missingProduct = validateMovementForm({
       ...baseForm,
       productoId: undefined,
@@ -37,7 +38,7 @@ describe("movement form validation", () => {
     expect(missingConfirmation.errors.confirmUnit).toBeDefined();
   });
 
-  it("rechaza cantidades inválidas", () => {
+  it("rechaza cantidades invalidas", () => {
     const tooManyDecimals = validateMovementForm({
       ...baseForm,
       quantity: "1.2345",
@@ -50,36 +51,34 @@ describe("movement form validation", () => {
       quantity: "abc",
     });
     expect(notNumber.isValid).toBe(false);
-    expect(notNumber.errors.quantity).toMatch(/numérica/i);
+    expect(notNumber.errors.quantity).toMatch(/numerica/i);
   });
 
-  it("aplica reglas de locaciones según el tipo", () => {
-    const usoValidation = validateMovementForm({
+  it("aplica las nuevas reglas de locaciones", () => {
+    const usoSinOrigen = validateMovementForm({
       ...baseForm,
       tipo: "uso",
       fromLocationId: undefined,
-      toLocationId: 4,
-    });
-    expect(usoValidation.isValid).toBe(false);
-    expect(usoValidation.errors.fromLocationId).toBeDefined();
-
-    const traspasoValidation = validateMovementForm({
-      ...baseForm,
-      tipo: "traspaso",
-      fromLocationId: 2,
-      toLocationId: 2,
-    });
-    expect(traspasoValidation.isValid).toBe(false);
-    expect(traspasoValidation.errors.toLocationId).toMatch(/distintos/i);
-
-    const ajusteValidation = validateMovementForm({
-      ...baseForm,
-      tipo: "ajuste",
-      fromLocationId: undefined,
       toLocationId: undefined,
     });
-    expect(ajusteValidation.isValid).toBe(false);
-    expect(ajusteValidation.errors.fromLocationId).toBeDefined();
+    expect(usoSinOrigen.isValid).toBe(false);
+    expect(usoSinOrigen.errors.fromLocationId).toMatch(/salen de/i);
+
+    const usoDestinoCentral = validateMovementForm({
+      ...baseForm,
+      tipo: "uso",
+      fromLocationId: CENTRAL_LOCATION_ID,
+      toLocationId: CENTRAL_LOCATION_ID,
+    });
+    expect(usoDestinoCentral.isValid).toBe(false);
+    expect(usoDestinoCentral.errors.toLocationId).toMatch(/destino/i);
+
+    const ingresoIncorrecto = validateMovementForm({
+      ...baseForm,
+      toLocationId: 999,
+    });
+    expect(ingresoIncorrecto.isValid).toBe(false);
+    expect(ingresoIncorrecto.errors.toLocationId).toMatch(/ingresos/i);
   });
 
   it("construye el payload compatible con el backend", () => {
@@ -98,17 +97,40 @@ describe("movement form validation", () => {
       tipo: "ingreso",
       producto_id: baseForm.productoId,
       cantidad: 2.345,
-      to_locacion_id: 1,
+      to_locacion_id: CENTRAL_LOCATION_ID,
       nota: null,
     });
+  });
+
+  it("omite el destino cuando el uso no define donde se consumio", () => {
+    const validation = validateMovementForm({
+      ...baseForm,
+      tipo: "uso",
+      fromLocationId: CENTRAL_LOCATION_ID,
+      toLocationId: undefined,
+    });
+    expect(validation.isValid).toBe(true);
+
+    const payload = buildMovimientoPayload(
+      {
+        ...baseForm,
+        tipo: "uso",
+        fromLocationId: CENTRAL_LOCATION_ID,
+        toLocationId: undefined,
+      },
+      validation.quantity
+    );
+    expect(payload.from_locacion_id).toBe(CENTRAL_LOCATION_ID);
+    expect("to_locacion_id" in payload).toBe(false);
   });
 
   it("conoce las reglas por tipo", () => {
     expect(resolveMovementRules("ingreso").requiresTo).toBe(true);
     expect(resolveMovementRules("ingreso").allowFrom).toBe(false);
     expect(resolveMovementRules("uso").requiresFrom).toBe(true);
-    expect(resolveMovementRules("uso").allowTo).toBe(false);
+    expect(resolveMovementRules("uso").allowTo).toBe(true);
     expect(resolveMovementRules("traspaso").requiresBothDistinct).toBe(true);
     expect(resolveMovementRules("ajuste").requiresAnyLocation).toBe(true);
   });
 });
+

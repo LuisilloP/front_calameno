@@ -15,6 +15,17 @@ export default function HelpPage() {
             Aquí encontrarás documentación y ayuda sobre cómo usar el sistema.
           </p>
         </section>
+        <section className="rounded-2xl border border-slate-800/60 bg-slate-900/50 p-4 text-sm text-slate-200">
+          <h3 className="mb-2 text-base font-semibold text-foreground">
+            Bodega central y destinos de uso
+          </h3>
+          <p>
+            Los usos registran dónde se gastó el producto sin afectar stock en esa locación; el stock
+            siempre vive en la bodega central. Cada movimiento de ingreso suma unidades en la{" "}
+            <strong>Bodega Calameno</strong> y los usos sólo etiquetan el punto de consumo (por
+            ejemplo cocina o barra) para generar contexto operativo.
+          </p>
+        </section>
       </div>
     </main>
   );

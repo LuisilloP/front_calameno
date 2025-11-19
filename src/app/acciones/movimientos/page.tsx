@@ -19,6 +19,10 @@ import {
   movementsApi,
 } from "@/services/movementsApi";
 import { PopupAlert, MovementAlertData } from "@/components/ui/PopupAlert";
+import {
+  CENTRAL_LOCATION_ID,
+  CENTRAL_LOCATION_NAME,
+} from "@/config/warehouse";
 
 type CatalogOption = {
   id: number;
@@ -233,12 +237,30 @@ const CatalogAutocomplete = ({
   );
 };
 
+const ReadOnlyLocationCard = ({
+  label,
+  value,
+  helperText,
+}: {
+  label: string;
+  value: string;
+  helperText?: string;
+}) => (
+  <div className="space-y-2">
+    <label className="text-sm font-semibold text-slate-200">{label}</label>
+    <div className="rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-2 text-sm text-slate-100">
+      {value}
+    </div>
+    {helperText && <p className="text-xs text-slate-400">{helperText}</p>}
+  </div>
+);
+
 const initialFormState: MovementFormState = {
   tipo: "ingreso",
   productoId: undefined,
   quantity: "",
   fromLocationId: undefined,
-  toLocationId: undefined,
+  toLocationId: CENTRAL_LOCATION_ID,
   personaId: undefined,
   proveedorId: undefined,
   nota: "",
@@ -325,7 +347,7 @@ const MovementRegistrationPage = () => {
     }));
   }, [productos.data]);
 
-  const locacionOptions = useMemo<CatalogOption[] | undefined>(() => {
+  const allLocationOptions = useMemo<CatalogOption[] | undefined>(() => {
     if (!locaciones.data) return undefined;
     return locaciones.data.map((loc) => ({
       id: loc.id,
@@ -334,11 +356,21 @@ const MovementRegistrationPage = () => {
     }));
   }, [locaciones.data]);
 
+  const usoDestinationOptions = useMemo<CatalogOption[] | undefined>(() => {
+    if (!allLocationOptions) return undefined;
+    return allLocationOptions.filter(
+      (loc) => loc.id !== CENTRAL_LOCATION_ID
+    );
+  }, [allLocationOptions]);
+
   const locacionesById = useMemo(() => {
     const map = new Map<number, string>();
     locaciones.data?.forEach((loc) => map.set(loc.id, loc.nombre));
     return map;
   }, [locaciones.data]);
+
+  const centralLocationLabel =
+    locacionesById.get(CENTRAL_LOCATION_ID) ?? CENTRAL_LOCATION_NAME;
 
   const productosById = useMemo(() => {
     const map = new Map<number, string>();
@@ -380,12 +412,24 @@ const MovementRegistrationPage = () => {
 
   const handleTipoChange = (tipo: MovementType) => {
     const rules = resolveMovementRules(tipo);
-    setForm((current) => ({
-      ...current,
-      tipo,
-      fromLocationId: rules.forbidFrom ? undefined : current.fromLocationId,
-      toLocationId: rules.forbidTo ? undefined : current.toLocationId,
-    }));
+    setForm((current) => {
+      const next: MovementFormState = {
+        ...current,
+        tipo,
+        fromLocationId: rules.forbidFrom ? undefined : current.fromLocationId,
+        toLocationId: rules.forbidTo ? undefined : current.toLocationId,
+      };
+      if (tipo === "ingreso") {
+        next.fromLocationId = undefined;
+        next.toLocationId = CENTRAL_LOCATION_ID;
+      } else if (tipo === "uso") {
+        next.fromLocationId = CENTRAL_LOCATION_ID;
+        if (next.toLocationId === CENTRAL_LOCATION_ID) {
+          next.toLocationId = undefined;
+        }
+      }
+      return next;
+    });
     setErrors((prev) => ({ ...prev, tipo: undefined, form: undefined }));
   };
 
@@ -412,22 +456,30 @@ const MovementRegistrationPage = () => {
       setSubmitState("success");
       // Build alert data
       if (movimiento.tipo === "ingreso" || movimiento.tipo === "uso") {
+        const destinoLabel = movimiento.to_locacion_id
+          ? locacionesById.get(movimiento.to_locacion_id) ??
+            `ID ${movimiento.to_locacion_id}`
+          : undefined;
         const alert: MovementAlertData = {
           tipo: movimiento.tipo === "ingreso" ? "ingreso" : "uso",
-          producto: productosById.get(movimiento.producto_id) ?? `ID ${movimiento.producto_id}`,
+          producto:
+            productosById.get(movimiento.producto_id) ??
+            `ID ${movimiento.producto_id}`,
           cantidad: movimiento.cantidad,
           unidad: productUnitLabel || undefined,
-          locacionDestino: movimiento.to_locacion_id
-            ? locacionesById.get(movimiento.to_locacion_id) ?? `ID ${movimiento.to_locacion_id}`
-            : undefined,
-          locacionOrigen: movimiento.from_locacion_id
-            ? locacionesById.get(movimiento.from_locacion_id) ?? `ID ${movimiento.from_locacion_id}`
-            : undefined,
+          locacionDestino:
+            movimiento.tipo === "ingreso"
+              ? destinoLabel ?? centralLocationLabel
+              : destinoLabel,
+          locacionOrigen:
+            movimiento.tipo === "uso" ? centralLocationLabel : undefined,
           persona: movimiento.persona_id
-            ? personasById.get(movimiento.persona_id) ?? `ID ${movimiento.persona_id}`
+            ? personasById.get(movimiento.persona_id) ??
+              `ID ${movimiento.persona_id}`
             : undefined,
           proveedor: movimiento.proveedor_id
-            ? proveedoresById.get(movimiento.proveedor_id) ?? `ID ${movimiento.proveedor_id}`
+            ? proveedoresById.get(movimiento.proveedor_id) ??
+              `ID ${movimiento.proveedor_id}`
             : undefined,
           nota: movimiento.nota || undefined,
           fechaIso: movimiento.created_at,
@@ -449,8 +501,6 @@ const MovementRegistrationPage = () => {
     hasTriedSubmit && submitState === "validating" && Object.keys(errors).length;
 
   const isSubmitting = submitState === "submitting";
-  const rules = resolveMovementRules(form.tipo);
-
   return (
     <main className="min-h-screen bg-slate-950/95 p-6 text-slate-50 [button:cursor-pointer] [input:cursor-pointer]">
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
@@ -464,7 +514,7 @@ const MovementRegistrationPage = () => {
                 Registrar movimiento de inventario
               </h1>
               <p className="text-sm text-slate-400">
-                Controla ingresos, usos, traspasos y ajustes desde una sola
+                Controla ingresos y usos desde una sola
                 pantalla.
               </p>
             </div>
@@ -679,47 +729,43 @@ const MovementRegistrationPage = () => {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <CatalogAutocomplete
-                label="Locación origen"
-                placeholder="Buscar locación"
-                options={locacionOptions}
-                status={locaciones.status}
-                value={form.fromLocationId}
-                disabled={!rules.allowFrom}
-                error={errors.fromLocationId}
+              <ReadOnlyLocationCard
+                label={
+                  form.tipo === "ingreso" ? "Ingreso en bodega" : "Bodega origen"
+                }
+                value={centralLocationLabel}
                 helperText={
-                  rules.forbidFrom
-                    ? "Los ingresos no requieren origen."
-                    : undefined
+                  form.tipo === "ingreso"
+                    ? "Los ingresos suman stock solo en la bodega central."
+                    : "Todos los usos descuentan stock desde la bodega central."
                 }
-                onChange={(value) =>
-                  setForm((current) => ({
-                    ...current,
-                    fromLocationId: value,
-                  }))
-                }
-                onRetry={locaciones.reload}
               />
 
-              <CatalogAutocomplete
-                label="Locación destino"
-                placeholder="Buscar locación"
-                options={locacionOptions}
-                status={locaciones.status}
-                value={form.toLocationId}
-                disabled={!rules.allowTo}
-                error={errors.toLocationId}
-                helperText={
-                  rules.forbidTo ? "Los usos no requieren destino." : undefined
-                }
-                onChange={(value) =>
-                  setForm((current) => ({
-                    ...current,
-                    toLocationId: value,
-                  }))
-                }
-                onRetry={locaciones.reload}
-              />
+              {form.tipo === "ingreso" ? (
+                <ReadOnlyLocationCard
+                  label="Destino del ingreso"
+                  value={centralLocationLabel}
+                  helperText="El stock fisico vive en la bodega central."
+                />
+              ) : (
+                <CatalogAutocomplete
+                  label="Donde se consumio (opcional)"
+                  placeholder="Ej. Cocina fria, Bar eventos"
+                  options={usoDestinationOptions}
+                  status={locaciones.status}
+                  value={form.toLocationId}
+                  disabled={locaciones.status !== "ready"}
+                  error={errors.toLocationId}
+                  helperText="Usos registran donde se gasto el producto sin afectar stock en esa locacion; el stock siempre vive en la bodega central."
+                  onChange={(value) =>
+                    setForm((current) => ({
+                      ...current,
+                      toLocationId: value,
+                    }))
+                  }
+                  onRetry={locaciones.reload}
+                />
+              )}
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
@@ -756,12 +802,13 @@ const MovementRegistrationPage = () => {
             </div>
 
             <div className="space-y-2">
+            <div className="space-y-2">
               <label className="text-sm font-semibold text-slate-200">
                 Nota interna (opcional)
               </label>
               <textarea
                 className="min-h-[100px] w-full rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-400 focus:outline-none"
-                placeholder="Ej: Ajuste por merma en cocina fría."
+                placeholder="Ej: Ajuste por merma en cocina fria."
                 value={form.nota}
                 onChange={(event) =>
                   setForm((current) => ({
@@ -803,6 +850,7 @@ const MovementRegistrationPage = () => {
                 </span>
               )}
             </div>
+            </div>
           </form>
 
           <aside className="space-y-4">
@@ -812,16 +860,10 @@ const MovementRegistrationPage = () => {
               </p>
               <ul className="mt-3 space-y-2 text-sm text-slate-300">
                 {form.tipo === "ingreso" && (
-                  <li>Requiere destino y bloquea origen.</li>
+                  <li>Se registra directo en la bodega central; no se define origen.</li>
                 )}
                 {form.tipo === "uso" && (
-                  <li>Requiere origen y bloquea destino.</li>
-                )}
-                {form.tipo === "traspaso" && (
-                  <li>Necesita origen y destino distintos.</li>
-                )}
-                {form.tipo === "ajuste" && (
-                  <li>Debe incluir al menos una locación.</li>
+                  <li>Descuenta desde la bodega central y puede etiquetar un destino logico opcional.</li>
                 )}
                 <li>Siempre validamos cantidades positivas con 3 decimales.</li>
               </ul>
@@ -868,20 +910,16 @@ const MovementRegistrationPage = () => {
                       `ID ${lastMovement.producto_id}`}
                   </li>
                   <li>Cantidad: {lastMovement.cantidad}</li>
-                  {lastMovement.from_locacion_id && (
-                    <li>
-                      Origen:{" "}
-                      {locacionesById.get(lastMovement.from_locacion_id) ??
-                        `ID ${lastMovement.from_locacion_id}`}
-                    </li>
-                  )}
-                  {lastMovement.to_locacion_id && (
-                    <li>
-                      Destino:{" "}
-                      {locacionesById.get(lastMovement.to_locacion_id) ??
-                        `ID ${lastMovement.to_locacion_id}`}
-                    </li>
-                  )}
+                  <li>
+                    {lastMovement.tipo === "ingreso"
+                      ? `Ingreso registrado en ${centralLocationLabel}`
+                      : lastMovement.to_locacion_id
+                          ? `Consumido en ${
+                              locacionesById.get(lastMovement.to_locacion_id) ??
+                              `ID ${lastMovement.to_locacion_id}`
+                            }`
+                          : "Uso sin destino etiquetado"}
+                  </li>
                   {lastMovement.persona_id && (
                     <li>Persona ID: {lastMovement.persona_id}</li>
                   )}

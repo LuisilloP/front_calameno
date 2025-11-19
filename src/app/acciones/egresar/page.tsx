@@ -12,7 +12,10 @@ export default function EgresarProductosPage() {
         Egresar Productos
       </h1>
       <div className="text-muted-foreground">
-        <p>Formulario para registrar salida de productos del inventario.</p>
+        <p>
+          Formulario para registrar usos: descuentan stock de la bodega central
+          y opcionalmente etiquetan dónde se consumió el producto.
+        </p>
       </div>
       <div className="mt-4">
         <button
@@ -23,7 +26,7 @@ export default function EgresarProductosPage() {
               producto: "Producto demo",
               cantidad: 3.5,
               unidad: "kg",
-              locacionOrigen: "Cocina Fría",
+              locacionDestino: "Cocina Fria",
               fechaIso: new Date().toISOString(),
               nota: "Uso para preparación de menú",
             })

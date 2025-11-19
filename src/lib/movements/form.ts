@@ -2,6 +2,10 @@ import {
   MovementType,
   MovimientoCreatePayload,
 } from "@/services/movementsApi";
+import {
+  CENTRAL_LOCATION_ID,
+  CENTRAL_LOCATION_NAME,
+} from "@/config/warehouse";
 
 export const MOVEMENT_TYPE_DEFINITIONS: Array<{
   value: MovementType;
@@ -11,22 +15,13 @@ export const MOVEMENT_TYPE_DEFINITIONS: Array<{
   {
     value: "ingreso",
     label: "Ingreso",
-    description: "Suma stock en una locación específica.",
+    description: `Suma stock directamente en ${CENTRAL_LOCATION_NAME}.`,
   },
   {
     value: "uso",
     label: "Uso",
-    description: "Descuenta stock desde una locación de origen.",
-  },
-  {
-    value: "traspaso",
-    label: "Traspaso",
-    description: "Traslada stock entre dos locaciones distintas.",
-  },
-  {
-    value: "ajuste",
-    label: "Ajuste",
-    description: "Corrige inventario agregando o quitando stock.",
+    description:
+      "Descuenta stock desde la bodega central y permite etiquetar el punto de consumo.",
   },
 ];
 
@@ -71,24 +66,24 @@ export const resolveMovementRules = (tipo: MovementType): MovementRules => {
     case "ingreso":
       return {
         allowFrom: false,
-        allowTo: true,
+        allowTo: false,
         requiresFrom: false,
         requiresTo: true,
-        requiresAnyLocation: true,
+        requiresAnyLocation: false,
         requiresBothDistinct: false,
         forbidFrom: true,
         forbidTo: false,
       };
     case "uso":
       return {
-        allowFrom: true,
-        allowTo: false,
+        allowFrom: false,
+        allowTo: true,
         requiresFrom: true,
         requiresTo: false,
-        requiresAnyLocation: true,
+        requiresAnyLocation: false,
         requiresBothDistinct: false,
         forbidFrom: false,
-        forbidTo: true,
+        forbidTo: false,
       };
     case "traspaso":
       return {
@@ -145,11 +140,11 @@ export const validateMovementForm = (
   if (!normalizedQty) {
     errors.quantity = "Ingresa una cantidad.";
   } else if (!Number.isFinite(parsedQty)) {
-    errors.quantity = "La cantidad debe ser numérica.";
+    errors.quantity = "La cantidad debe ser numerica.";
   } else if (!isPositiveNumber(parsedQty)) {
     errors.quantity = "La cantidad debe ser mayor a 0.";
   } else if (countDecimals(parsedQty) > 3) {
-    errors.quantity = "Usa máximo 3 decimales.";
+    errors.quantity = "Usa maximo 3 decimales.";
   }
 
   if (form.productoId && !form.confirmUnit) {
@@ -160,20 +155,20 @@ export const validateMovementForm = (
 
   if (rules.forbidFrom && form.fromLocationId !== undefined) {
     errors.fromLocationId =
-      "Este tipo de movimiento no admite locación origen.";
+      "Este tipo de movimiento no admite locacion origen.";
   }
 
   if (rules.forbidTo && form.toLocationId !== undefined) {
     errors.toLocationId =
-      "Este tipo de movimiento no admite locación destino.";
+      "Este tipo de movimiento no admite locacion destino.";
   }
 
   if (rules.requiresFrom && !form.fromLocationId) {
-    errors.fromLocationId = "Selecciona la locación origen.";
+    errors.fromLocationId = "Selecciona la locacion origen.";
   }
 
   if (rules.requiresTo && !form.toLocationId) {
-    errors.toLocationId = "Selecciona la locación destino.";
+    errors.toLocationId = "Selecciona la locacion destino.";
   }
 
   if (
@@ -181,8 +176,8 @@ export const validateMovementForm = (
     !form.fromLocationId &&
     !form.toLocationId
   ) {
-    errors.fromLocationId ??= "Debes definir al menos una locación.";
-    errors.toLocationId ??= "Debes definir al menos una locación.";
+    errors.fromLocationId ??= "Debes definir al menos una locacion.";
+    errors.toLocationId ??= "Debes definir al menos una locacion.";
   }
 
   if (
@@ -192,6 +187,28 @@ export const validateMovementForm = (
     form.fromLocationId === form.toLocationId
   ) {
     errors.toLocationId = "Origen y destino deben ser distintos.";
+  }
+
+  if (form.tipo === "ingreso") {
+    if (form.toLocationId !== CENTRAL_LOCATION_ID) {
+      errors.toLocationId = `Todos los ingresos llegan a ${CENTRAL_LOCATION_NAME}.`;
+    }
+    if (
+      form.fromLocationId &&
+      form.fromLocationId !== CENTRAL_LOCATION_ID
+    ) {
+      errors.fromLocationId = `El origen para ingresos es siempre ${CENTRAL_LOCATION_NAME}.`;
+    }
+  }
+
+  if (form.tipo === "uso") {
+    if (form.fromLocationId !== CENTRAL_LOCATION_ID) {
+      errors.fromLocationId = `Los usos siempre salen de ${CENTRAL_LOCATION_NAME}.`;
+    }
+    if (form.toLocationId === CENTRAL_LOCATION_ID) {
+      errors.toLocationId =
+        "El destino de uso debe ser distinto a la bodega central.";
+    }
   }
 
   const isValid = Object.keys(errors).length === 0;
@@ -207,14 +224,38 @@ export const buildMovimientoPayload = (
       ? parsedQuantity
       : Number(normalizeQuantity(form.quantity));
 
-  return {
+  const basePayload = {
     tipo: form.tipo,
     producto_id: form.productoId!,
     cantidad: Number(quantity.toFixed(3)),
-    from_locacion_id: form.fromLocationId ?? null,
-    to_locacion_id: form.toLocationId ?? null,
     persona_id: form.personaId ?? null,
     proveedor_id: form.proveedorId ?? null,
     nota: form.nota.trim() ? form.nota.trim() : null,
   };
+
+  if (form.tipo === "ingreso") {
+    return {
+      ...basePayload,
+      from_locacion_id: null,
+      to_locacion_id: CENTRAL_LOCATION_ID,
+    };
+  }
+
+  if (form.tipo === "uso") {
+    const payload: MovimientoCreatePayload = {
+      ...basePayload,
+      from_locacion_id: CENTRAL_LOCATION_ID,
+    };
+    if (typeof form.toLocationId === "number") {
+      payload.to_locacion_id = form.toLocationId;
+    }
+    return payload;
+  }
+
+  return {
+    ...basePayload,
+    from_locacion_id: form.fromLocationId ?? null,
+    to_locacion_id: form.toLocationId ?? null,
+  };
 };
+

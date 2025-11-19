@@ -3,6 +3,7 @@
 import React from "react";
 import { useState } from "react";
 import { PopupAlert, MovementAlertData } from "@/components/ui/PopupAlert";
+import { CENTRAL_LOCATION_NAME } from "@/config/warehouse";
 
 export default function IngresarProductosPage() {
   const [alert, setAlert] = useState<MovementAlertData | null>(null);
@@ -12,7 +13,10 @@ export default function IngresarProductosPage() {
         Ingresar Productos
       </h1>
       <div className="text-muted-foreground">
-        <p>Formulario para registrar ingreso de productos al inventario.</p>
+        <p>
+          Formulario para registrar ingreso de productos directamente en{" "}
+          {CENTRAL_LOCATION_NAME}.
+        </p>
       </div>
       <div className="mt-4">
         <button
@@ -23,7 +27,7 @@ export default function IngresarProductosPage() {
               producto: "Producto demo",
               cantidad: 10,
               unidad: "un",
-              locacionDestino: "Depósito Central",
+              locacionDestino: CENTRAL_LOCATION_NAME,
               fechaIso: new Date().toISOString(),
             })
           }
