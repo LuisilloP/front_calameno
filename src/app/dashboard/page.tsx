@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useDashboardData } from '@/hooks/useDashboardData';
+import { CENTRAL_LOCATION_NAME } from '@/config/warehouse';
 
 type KpiCardProps = {
   label: string;
@@ -31,8 +32,6 @@ const movementTypes = [
   { label: 'Todos', value: '' },
   { label: 'Ingresos', value: 'ingreso' },
   { label: 'Usos', value: 'uso' },
-  { label: 'Traspasos', value: 'traspaso' },
-  { label: 'Ajustes', value: 'ajuste' },
 ];
 
 const limitOptions = [25, 50, 100, 200];
@@ -264,7 +263,7 @@ const DashboardInventarioMVP: React.FC = () => {
         <KpiCard
           label="Movimientos ultimos 7 dias"
           value={integerFormatter.format(kpis.totalMovementsLast7d)}
-          helper="Incluye ingresos, usos, traspasos y ajustes."
+          helper="Incluye ingresos y usos."
         />
         <KpiCard
           label="Productos distintos (7 dias)"
@@ -356,7 +355,10 @@ const DashboardInventarioMVP: React.FC = () => {
                   Limpiar filtros API
                 </button>
               </div>
-            </div>
+              </div>
+            <p className="text-[9px] text-slate-500">
+              Solo la bodega central refleja existencias; los destinos de uso son contextuales.
+            </p>
             <div className="flex flex-wrap items-center gap-2 text-slate-400">
               <span className="text-[9px] uppercase tracking-wide">Rango de fechas (frontend)</span>
               <label className="text-[9px] text-slate-500" htmlFor="date-from">
@@ -443,7 +445,19 @@ const DashboardInventarioMVP: React.FC = () => {
                   </tr>
                 )}
 
-                {filteredMovements.map((mov) => (
+              {filteredMovements.map((mov) => {
+                const hasFrom = mov.fromLocation && mov.fromLocation !== '-';
+                const hasTo = mov.toLocation && mov.toLocation !== '-';
+                const locationLabel =
+                  mov.type === 'uso'
+                    ? hasTo
+                      ? `Consumido en ${mov.toLocation}`
+                      : 'Uso sin destino etiquetado'
+                    : mov.type === 'ingreso'
+                      ? `Ingreso en ${CENTRAL_LOCATION_NAME}`
+                      : `${hasFrom ? mov.fromLocation : '-'} -> ${hasTo ? mov.toLocation : '-'}`;
+
+                return (
                   <tr key={mov.id} className="hover:bg-slate-900/60">
                     <td className="whitespace-nowrap px-3 py-2 text-slate-300">{mov.dateLabel}</td>
                     <td className="px-3 py-2 capitalize">
@@ -456,11 +470,7 @@ const DashboardInventarioMVP: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-3 py-2 text-slate-200">{mov.productName}</td>
-                    <td className="px-3 py-2 text-slate-400">
-                      {mov.fromLocation || '-'}
-                      {' -> '}
-                      {mov.toLocation || '-'}
-                    </td>
+                    <td className="px-3 py-2 text-slate-400">{locationLabel}</td>
                     <td className="px-3 py-2 text-right text-slate-100">
                       {quantityFormatter.format(mov.quantity)}
                     </td>
@@ -470,7 +480,8 @@ const DashboardInventarioMVP: React.FC = () => {
                       {mov.note || 'Sin nota'}
                     </td>
                   </tr>
-                ))}
+                );
+              })}
               </tbody>
             </table>
           </div>
