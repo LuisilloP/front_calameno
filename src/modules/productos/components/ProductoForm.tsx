@@ -4,6 +4,7 @@ import { FormEvent, useMemo, useRef, useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { AdminModal } from "@/modules/admin/components/AdminModal";
 import { ProductoCatalogs, ProductoFormState } from "../types";
+import { SearchableSelect } from "@/modules/ui/SearchableSelect";
 
 type ProductoFormProps = {
   isOpen: boolean;
@@ -108,6 +109,15 @@ const ProductoFormFields = ({
   useEffect(() => {
     nameInputRef.current?.focus();
   }, []);
+
+  const marcaOptions = useMemo(
+    () =>
+      catalogs.marcas.map((marca) => ({
+        value: String(marca.id),
+        label: marca.nombre,
+      })),
+    [catalogs.marcas]
+  );
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -215,13 +225,23 @@ const ProductoFormFields = ({
           true,
           "Selecciona la unidad"
         )}
-        {renderSelect(
-          "Marca",
-          "marca_id",
-          catalogs.marcas,
-          false,
-          "Opcional"
-        )}
+        <div className="space-y-1">
+          <label className="text-xs uppercase tracking-[0.3em] text-slate-400">
+            Marca
+          </label>
+          <SearchableSelect
+            placeholder="Opcional"
+            options={marcaOptions}
+            selected={values.marca_id ? [String(values.marca_id)] : []}
+            onChange={(ids) =>
+              setValues((prev) => ({
+                ...prev,
+                marca_id: ids[0] ? Number(ids[0]) : undefined,
+              }))
+            }
+            disabled={loading}
+          />
+        </div>
         {renderSelect(
           "Categoría",
           "categoria_id",

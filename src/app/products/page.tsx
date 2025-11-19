@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Input, Select } from "../../components/form";
+import { SearchableSelect } from "@/modules/ui/SearchableSelect";
 
 export default function ProductsPage() {
   const [form, setForm] = useState({
@@ -14,6 +15,14 @@ export default function ProductsPage() {
     unit: "",
     category: "",
   });
+
+  const brands = [
+    { value: "Perrier", label: "Perrier" },
+    { value: "Bonafont", label: "Bonafont" },
+    { value: "Coca-Cola", label: "Coca-Cola" },
+    { value: "Pepsi", label: "Pepsi" },
+    { value: "Nestle", label: "Nestlé" },
+  ];
 
   const providers = [
     { value: "prov1", label: "Proveedor A" },
@@ -66,10 +75,12 @@ export default function ProductsPage() {
         </div>
 
         <div>
-          <Input
+          <SearchableSelect
             label="Marca"
-            value={form.brand}
-            onChange={(v) => update("brand", v)}
+            placeholder="Buscar o seleccionar marca"
+            options={brands}
+            selected={form.brand ? [form.brand] : []}
+            onChange={(values) => update("brand", values[0] ?? "")}
           />
         </div>
 
