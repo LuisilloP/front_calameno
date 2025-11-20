@@ -28,7 +28,7 @@ describe("movementsApi", () => {
     expect(productos).toHaveLength(1);
     expect(productos[0].nombre).toBe("Manzanas");
     expect(global.fetch).toHaveBeenCalledWith(
-      "http://localhost:8000/api/v1/productos",
+      "http://localhost:8000/api/v1/productos?skip=0&limit=500",
       expect.objectContaining({ method: "GET" })
     );
   });

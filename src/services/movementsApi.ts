@@ -83,10 +83,27 @@ type RequestOptions = {
   method?: "GET" | "POST";
   body?: unknown;
   signal?: AbortSignal;
+  query?: Record<
+    string,
+    string | number | boolean | undefined | null
+  >;
 };
 
 const defaultHeaders: HeadersInit = {
   Accept: "application/json",
+};
+
+const buildQueryString = (query?: RequestOptions["query"]) => {
+  if (!query) return "";
+  const entries = Object.entries(query).reduce(
+    (acc, [key, value]) => {
+      if (value === undefined || value === null) return acc;
+      return acc.concat([[key, String(value)]]);
+    },
+    [] as Array<[string, string]>
+  );
+  if (entries.length === 0) return "";
+  return `?${new URLSearchParams(entries).toString()}`;
 };
 
 const parseJson = async <T>(response: Response): Promise<T | undefined> => {
@@ -116,7 +133,8 @@ const buildApiError = async (response: Response): Promise<ApiErrorDetail> => {
 };
 
 const request = async <T>(path: string, options: RequestOptions = {}) => {
-  const url = `${BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  const queryString = buildQueryString(options.query);
+  const url = `${BASE_URL}${path.startsWith("/") ? path : `/${path}`}${queryString}`;
   const init: RequestInit = {
     method: options.method ?? "GET",
     headers: {
@@ -152,7 +170,9 @@ const normalizeListResponse = <T>(payload: unknown): T[] => {
 };
 
 const listProductos = async (): Promise<ProductoCatalogItem[]> => {
-  const response = await request<unknown>("/productos");
+  const response = await request<unknown>("/productos", {
+    query: { skip: 0, limit: 500 },
+  });
   return normalizeListResponse<ProductoCatalogItem>(response);
 };
 
@@ -176,6 +196,28 @@ const listUoms = async (): Promise<UomCatalogItem[]> => {
   return normalizeListResponse<UomCatalogItem>(response);
 };
 
+export type StockItem = {
+  producto_id: number;
+  locacion_id: number;
+  stock: string | number;
+};
+
+const getStock = async (
+  productoId: number,
+  locacionId?: number | null,
+  signal?: AbortSignal
+) => {
+  const response = await request<unknown>("/stock", {
+    query: {
+      producto_id: productoId,
+      locacion_id: locacionId ?? undefined,
+    },
+    signal,
+  });
+  const items = normalizeListResponse<StockItem>(response);
+  return items[0];
+};
+
 const createMovimiento = (payload: MovimientoCreatePayload) =>
   request<MovimientoOut>("/movimientos", {
     method: "POST",
@@ -188,6 +230,7 @@ export const movementsApi = {
   listPersonas,
   listProveedores,
   listUoms,
+  getStock,
   createMovimiento,
 };
 

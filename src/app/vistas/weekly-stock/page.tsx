@@ -146,7 +146,7 @@ export default function WeeklyStockPage() {
       </header>
 
       <section className="rounded-2xl border border-slate-800/60 bg-slate-950/40 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.45)]">
-        <div className="flex flex-col gap-8 lg:flex-row">
+        <div className="flex flex-col gap-8 lg:flex-col">
           <div className="flex-1 space-y-3">
             <div>
               <p className="text-xs uppercase tracking-[0.35em] text-slate-500">

@@ -67,6 +67,16 @@ const formatMovementDate = (iso: string) => {
   }).format(date);
 };
 
+const parseStockValue = (raw?: string | number | null) => {
+  if (typeof raw === "number") return raw;
+  if (typeof raw === "string") {
+    const normalized = raw.replace(",", ".").trim();
+    const parsed = Number(normalized);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return undefined;
+};
+
 const CatalogAutocomplete = ({
   label,
   placeholder,
@@ -84,6 +94,19 @@ const CatalogAutocomplete = ({
   const [open, setOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const previousValue = useRef<number | undefined>(value);
+
+  useEffect(() => {
+    if (previousValue.current !== value) {
+      previousValue.current = value;
+      if (selected) {
+        setQuery(selected.label);
+        setIsTyping(false);
+      } else if (!isTyping) {
+        setQuery("");
+      }
+    }
+  }, [selected, value, isTyping]);
 
   const handleSelect = (opt: CatalogOption) => {
     onChange(opt.id);
@@ -117,6 +140,8 @@ const CatalogAutocomplete = ({
       }`.toLowerCase();
       return haystack.includes(query.toLowerCase());
     }) ?? [];
+  const displayValue =
+    isTyping || !selected ? query : query || selected.label;
 
   return (
     <div className="relative space-y-1" ref={containerRef}>
@@ -135,7 +160,7 @@ const CatalogAutocomplete = ({
           <input
             className="w-full bg-transparent text-sm text-slate-50 placeholder:text-slate-500 focus:outline-none cursor-pointer"
             placeholder={placeholder}
-            value={isTyping ? query : selected?.label ?? ""}
+            value={displayValue}
             disabled={disabled || status !== "ready"}
             onFocus={() => setOpen(true)}
             onChange={(event) => {
@@ -147,8 +172,6 @@ const CatalogAutocomplete = ({
               setIsTyping(false);
               if (selected) {
                 setQuery(selected.label);
-              } else {
-                setQuery("");
               }
             }}
           />
@@ -206,7 +229,7 @@ const CatalogAutocomplete = ({
               Sin coincidencias
             </div>
           ) : (
-            filtered.slice(0, 40).map((opt) => (
+            filtered.map((opt) => (
               <button
                 type="button"
                 key={opt.id}
@@ -307,6 +330,11 @@ const MovementRegistrationPage = () => {
   const [lastMovement, setLastMovement] = useState<MovimientoOut | null>(null);
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false);
   const [movementAlert, setMovementAlert] = useState<MovementAlertData | null>(null);
+  const [stockInfo, setStockInfo] = useState<{
+    status: "idle" | "loading" | "ready" | "error";
+    value?: number;
+    error?: string;
+  }>({ status: "idle" });
 
   const selectedProduct = useMemo(
     () => productos.data?.find((p) => p.id === form.productoId),
@@ -371,6 +399,15 @@ const MovementRegistrationPage = () => {
 
   const centralLocationLabel =
     locacionesById.get(CENTRAL_LOCATION_ID) ?? CENTRAL_LOCATION_NAME;
+  const stockLocationId =
+    form.tipo === "ingreso"
+      ? CENTRAL_LOCATION_ID
+      : form.fromLocationId ?? CENTRAL_LOCATION_ID;
+  const stockLocationLabel =
+    locacionesById.get(stockLocationId) ??
+    (stockLocationId === CENTRAL_LOCATION_ID
+      ? centralLocationLabel
+      : `Locacion ${stockLocationId}`);
 
   const productosById = useMemo(() => {
     const map = new Map<number, string>();
@@ -407,6 +444,37 @@ const MovementRegistrationPage = () => {
     proveedores.data?.forEach((pr) => map.set(pr.id, pr.nombre));
     return map;
   }, [proveedores.data]);
+
+  useEffect(() => {
+    if (!form.productoId) {
+      setStockInfo({ status: "idle" });
+      return;
+    }
+
+    const controller = new AbortController();
+    setStockInfo({ status: "loading" });
+
+    movementsApi
+      .getStock(form.productoId, stockLocationId, controller.signal)
+      .then((result) => {
+        const parsed = parseStockValue(result?.stock);
+        setStockInfo({
+          status: "ready",
+          value: parsed,
+        });
+      })
+      .catch((error) => {
+        if (controller.signal.aborted) return;
+        const message =
+          typeof error === "object" && error && "message" in error
+            ? ((error as { message?: string }).message ??
+              "No se pudo obtener stock.")
+            : "No se pudo obtener stock.";
+        setStockInfo({ status: "error", error: message });
+      });
+
+    return () => controller.abort();
+  }, [form.productoId, stockLocationId]);
 
   // popup toasts are handled by ToastProvider via useToast
 
@@ -658,6 +726,35 @@ const MovementRegistrationPage = () => {
               }
               onRetry={productos.reload}
             />
+
+            {form.productoId && (
+              <div className="mt-1 flex items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900/60 px-3 py-2 text-xs text-slate-300">
+                <span className="text-slate-200">
+                  Stock en {stockLocationLabel}:
+                </span>
+                {stockInfo.status === "loading" && (
+                  <span className="inline-flex items-center gap-1 text-slate-400">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Consultando...
+                  </span>
+                )}
+                {stockInfo.status === "error" && (
+                  <span className="text-amber-300">
+                    {stockInfo.error ?? "No se pudo obtener stock."}
+                  </span>
+                )}
+                {stockInfo.status === "ready" && (
+                  <span className="font-semibold text-slate-100">
+                    {typeof stockInfo.value === "number"
+                      ? stockInfo.value.toLocaleString("es-CL", {
+                          minimumFractionDigits: 3,
+                          maximumFractionDigits: 3,
+                        })
+                      : "Sin dato"}
+                  </span>
+                )}
+              </div>
+            )}
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
