@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 interface Option {
   value: string;
@@ -33,62 +33,79 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const onDoc = (e: MouseEvent) => {
+    const onDoc = (event: MouseEvent) => {
       if (!containerRef.current) return;
-      if (!containerRef.current.contains(e.target as Node)) setOpen(false);
+      if (!containerRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
     };
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
-  const filtered = options.filter((o) =>
-    o.label.toLowerCase().includes(filter.toLowerCase())
+  const filtered = options.filter((option) =>
+    option.label.toLowerCase().includes(filter.toLowerCase())
   );
 
-  const selectedLabel = options.find((o) => o.value === value)?.label || "";
+  const selectedLabel = options.find((option) => option.value === value)?.label ?? "";
 
   return (
     <div className={`relative ${className}`} ref={containerRef}>
       {label && (
-        <div className="text-sm font-medium text-gray-700 mb-1">{label}</div>
+        <label
+          htmlFor={id || name}
+          className="mb-1 block text-sm font-semibold text-[hsl(var(--muted-strong))]"
+        >
+          {label}
+        </label>
       )}
-      <div
-        className="flex items-center gap-2 rounded-md border border-gray-300 px-3 py-2 bg-white cursor-pointer"
-        onClick={() => setOpen((s) => !s)}
+      <button
+        type="button"
+        className="flex w-full items-center gap-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] px-3 py-2 text-left text-sm text-[hsl(var(--foreground))] shadow-sm transition hover:border-[hsl(var(--accent))]"
+        onClick={() => setOpen((state) => !state)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        id={id}
+        name={name}
       >
-        <div className="flex-1 text-sm text-gray-700">
-          {selectedLabel || placeholder}
-        </div>
-        <div className="text-xs text-gray-500">▾</div>
-      </div>
+        <span className="flex-1 truncate">
+          {selectedLabel || <span className="text-[hsl(var(--muted))]">{placeholder}</span>}
+        </span>
+        <span className="text-xs text-[hsl(var(--muted))]">▾</span>
+      </button>
 
       {open && (
-        <div className="absolute z-40 mt-1 w-full bg-white border border-gray-200 rounded shadow-lg">
-          <div className="p-2">
+        <div className="absolute z-40 mt-1 w-full rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] shadow-xl shadow-black/10">
+          <div className="p-3">
             <input
               autoFocus
               value={filter}
-              onChange={(e) => setFilter(e.target.value)}
+              onChange={(event) => setFilter(event.target.value)}
               placeholder={placeholder}
-              className="w-full rounded-md border border-gray-200 px-2 py-1 focus:outline-none"
+              className="w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface-muted))] px-3 py-2 text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted))] focus:border-[hsl(var(--accent))] focus:outline-none"
             />
           </div>
-          <div className="max-h-48 overflow-auto">
+          <div className="max-h-60 overflow-auto">
             {filtered.length === 0 && (
-              <div className="p-2 text-sm text-gray-500">No hay resultados</div>
+              <div className="px-3 pb-3 text-sm text-[hsl(var(--muted))]">
+                No hay resultados
+              </div>
             )}
-            {filtered.map((opt) => (
-              <div
-                key={opt.value}
+            {filtered.map((option) => (
+              <button
+                key={option.value}
+                type="button"
                 onClick={() => {
-                  onChange && onChange(opt.value);
+                  onChange?.(option.value);
                   setOpen(false);
                   setFilter("");
                 }}
-                className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                className="flex w-full items-start px-3 py-2 text-left text-sm text-[hsl(var(--foreground))] transition hover:bg-[hsla(var(--accent)/0.08)]"
+                role="option"
+                aria-selected={value === option.value}
               >
-                {opt.label}
-              </div>
+                {option.label}
+              </button>
             ))}
           </div>
         </div>

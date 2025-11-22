@@ -7,13 +7,17 @@ import {
   WeeklyStockRequest,
   WeeklyStockResponse,
 } from "./types";
+import {
+  inventoryWeeklyKeys,
+  normalizeWeeklyRequest,
+} from "./query-keys";
 
-const INVENTORY_WEEKLY_KEY = "inventory-weekly";
 const FIVE_MINUTES = 1000 * 60 * 5;
+const RETRY_DISABLED = 0;
 
 export const useInventoryCategories = (initialData?: InventoryCategory[]) =>
   useQuery({
-    queryKey: [INVENTORY_WEEKLY_KEY, "categories"],
+    queryKey: inventoryWeeklyKeys.categories(),
     queryFn: fetchCategories,
     initialData,
     staleTime: FIVE_MINUTES,
@@ -27,18 +31,24 @@ type WeeklyOptions = {
 export const useWeeklyStock = (
   params: WeeklyStockRequest | null,
   options?: WeeklyOptions
-) =>
-  useQuery({
-    queryKey: [INVENTORY_WEEKLY_KEY, "weekly", params],
+) => {
+  const normalizedParams = normalizeWeeklyRequest(params);
+  const enabled = Boolean(normalizedParams) && (options?.enabled ?? true);
+
+  return useQuery({
+    queryKey: normalizedParams
+      ? inventoryWeeklyKeys.weekly(normalizedParams)
+      : inventoryWeeklyKeys.weeklyIdle(),
     queryFn: () => {
-      if (!params || params.categories.length === 0) {
-        throw new Error("Se requiere al menos una categoria");
+      if (!normalizedParams) {
+        return Promise.resolve<WeeklyStockResponse>([]);
       }
-      return fetchWeeklyStock(params);
+      return fetchWeeklyStock(normalizedParams);
     },
-    enabled:
-      Boolean(params && params.categories.length > 0) &&
-      (options?.enabled ?? true),
+    enabled,
     keepPreviousData: true,
     initialData: options?.initialData,
+    retry: RETRY_DISABLED,
+    staleTime: FIVE_MINUTES,
   });
+};

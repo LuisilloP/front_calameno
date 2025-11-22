@@ -1,30 +1,34 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   SidebarNavigation,
   SidebarNavigationProps,
 } from "@/components/navigation/SidebarNavigation";
 import {
-  ArrowUpDownIcon,
-  CircleQuestionMarkIcon,
   ClipboardListIcon,
   EyeIcon,
   LandPlotIcon,
   LayoutDashboardIcon,
   PackageMinusIcon,
   PackagePlusIcon,
-  Settings2Icon,
   TagIcon,
   TruckIcon,
   Users2,
-  WarehouseIcon,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
+
 export default function ProductSidebar() {
   const { theme, setTheme, resolvedTheme: nextResolvedTheme } = useTheme();
-  const resolvedTheme = (nextResolvedTheme ?? theme) === "dark" ? "dark" : "light";
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const resolvedTheme =
+    mounted && (nextResolvedTheme ?? theme) === "dark" ? "dark" : "light";
 
   const handleThemeToggle = useCallback(() => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");

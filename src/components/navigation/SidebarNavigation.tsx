@@ -78,46 +78,56 @@ type VariantTokens = {
 
 const variantTokens: Record<SidebarVariant, VariantTokens> = {
   light: {
-    container: "bg-white text-slate-900",
+    container:
+      "bg-[hsl(var(--sidebar-surface))] text-[hsl(var(--foreground))]",
     header:
-      "bg-slate-900 text-white shadow-md shadow-slate-900/5 border-b border-slate-800/40",
+      "bg-[hsl(var(--sidebar-strong))] text-[hsl(var(--foreground))] shadow-sm border-b border-[hsl(var(--border))]",
     badge:
-      "bg-slate-800/60 text-slate-100 hover:bg-slate-700 transition-colors",
-    sectionLabel: "text-slate-400",
+      "bg-[hsla(var(--accent)/0.14)] text-[hsl(var(--accent))] hover:bg-[hsla(var(--accent)/0.22)] transition-colors",
+    sectionLabel: "text-[hsl(var(--muted))]",
     navItem:
-      "text-slate-500 hover:text-slate-900 hover:bg-slate-100 focus-visible:ring-slate-400 focus-visible:ring-offset-white",
-    navItemActive: "bg-slate-100 text-slate-900 shadow-inner shadow-slate-200",
-    navBadge: "bg-slate-200 text-slate-700",
+      "text-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] hover:bg-[hsla(var(--border)/0.45)] focus-visible:ring-[hsl(var(--accent))] focus-visible:ring-offset-[hsl(var(--background))]",
+    navItemActive:
+      "bg-[hsla(var(--accent)/0.18)] text-[hsl(var(--foreground))] shadow-inner",
+    navBadge: "bg-[hsla(var(--accent)/0.1)] text-[hsl(var(--muted-strong))]",
     teamItem:
-      "text-slate-500 hover:text-slate-900 hover:bg-slate-100 focus-visible:ring-slate-400 focus-visible:ring-offset-white",
-    teamItemActive: "bg-slate-100 text-slate-900 shadow-inner shadow-slate-200",
-    teamInitials: "bg-slate-100 text-slate-600",
-    divider: "border-slate-100",
-    avatarRing: "ring-slate-200",
-    avatarFallback: "bg-slate-200 text-slate-600",
+      "text-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] hover:bg-[hsla(var(--border)/0.45)] focus-visible:ring-[hsl(var(--accent))] focus-visible:ring-offset-[hsl(var(--background))]",
+    teamItemActive:
+      "bg-[hsla(var(--accent)/0.18)] text-[hsl(var(--foreground))] shadow-inner",
+    teamInitials:
+      "bg-[hsl(var(--surface-strong))] text-[hsl(var(--muted-strong))]",
+    divider: "border-[hsl(var(--border))]",
+    avatarRing: "ring-[hsl(var(--border))]",
+    avatarFallback:
+      "bg-[hsl(var(--surface-strong))] text-[hsl(var(--muted-strong))]",
     userCard:
-      "hover:bg-slate-100 focus-visible:ring-slate-400 focus-visible:ring-offset-white",
+      "hover:bg-[hsl(var(--surface-strong))] focus-visible:ring-[hsl(var(--accent))] focus-visible:ring-offset-[hsl(var(--background))]",
   },
   dark: {
-    container: "bg-slate-950 text-slate-50",
+    container:
+      "bg-[hsl(var(--sidebar-surface))] text-[hsl(var(--foreground))]",
     header:
-      "bg-slate-900 text-slate-50 shadow-md shadow-black/50 border-b border-slate-800",
+      "bg-[hsl(var(--sidebar-strong))] text-[hsl(var(--foreground))] shadow-lg shadow-black/40 border-b border-[hsl(var(--border))]",
     badge:
-      "bg-indigo-500/20 text-indigo-200 hover:bg-indigo-500/30 transition-colors",
-    sectionLabel: "text-slate-400",
+      "bg-[hsla(var(--accent)/0.22)] text-[hsl(var(--accent-foreground))] hover:bg-[hsla(var(--accent)/0.3)] transition-colors",
+    sectionLabel: "text-[hsl(var(--muted))]",
     navItem:
-      "text-slate-200 hover:text-white hover:bg-slate-800 focus-visible:ring-indigo-400 focus-visible:ring-offset-slate-900",
-    navItemActive: "bg-slate-800 text-white shadow-inner shadow-black/40",
-    navBadge: "bg-slate-800 text-slate-200",
+      "text-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--surface-strong))] focus-visible:ring-[hsl(var(--accent))] focus-visible:ring-offset-[hsl(var(--surface))]",
+    navItemActive:
+      "bg-[hsla(var(--accent)/0.28)] text-[hsl(var(--foreground))] shadow-inner shadow-black/30",
+    navBadge: "bg-[hsl(var(--surface-strong))] text-[hsl(var(--muted))]",
     teamItem:
-      "text-slate-200 hover:text-white hover:bg-slate-800 focus-visible:ring-indigo-400 focus-visible:ring-offset-slate-900",
-    teamItemActive: "bg-slate-800 text-white shadow-inner shadow-black/40",
-    teamInitials: "bg-slate-800 text-slate-200",
-    divider: "border-slate-800",
-    avatarRing: "ring-slate-700",
-    avatarFallback: "bg-slate-800 text-slate-200",
+      "text-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--surface-strong))] focus-visible:ring-[hsl(var(--accent))] focus-visible:ring-offset-[hsl(var(--surface))]",
+    teamItemActive:
+      "bg-[hsla(var(--accent)/0.28)] text-[hsl(var(--foreground))] shadow-inner shadow-black/30",
+    teamInitials:
+      "bg-[hsl(var(--surface-strong))] text-[hsl(var(--muted-strong))]",
+    divider: "border-[hsl(var(--border))]",
+    avatarRing: "ring-[hsl(var(--border))]",
+    avatarFallback:
+      "bg-[hsl(var(--surface-strong))] text-[hsl(var(--muted-strong))]",
     userCard:
-      "hover:bg-slate-800 focus-visible:ring-indigo-400 focus-visible:ring-offset-slate-900",
+      "hover:bg-[hsl(var(--surface-strong))] focus-visible:ring-[hsl(var(--accent))] focus-visible:ring-offset-[hsl(var(--surface))]",
   },
 };
 
@@ -206,7 +216,7 @@ export function SidebarNavigation({
               <button
                 type="button"
                 onClick={onThemeToggle}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[hsl(var(--surface-strong))] text-[hsl(var(--foreground))] shadow-sm transition hover:bg-[hsl(var(--surface))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--accent))] focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(var(--background))]"
                 aria-label={`Cambiar a modo ${
                   currentTheme === "light" ? "oscuro" : "claro"
                 }`}
@@ -246,7 +256,7 @@ export function SidebarNavigation({
               <button
                 type="button"
                 onClick={onMenuToggle}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[hsl(var(--surface-strong))] text-[hsl(var(--foreground))] shadow-sm transition hover:bg-[hsl(var(--surface))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--accent))] focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(var(--background))]"
                 aria-label="Collapse sidebar"
               >
                 <span
@@ -259,7 +269,7 @@ export function SidebarNavigation({
         </div>
         <div className="flex items-center justify-between gap-3 text-sm">
           {brand.tagline ? (
-            <p className="text-slate-300">{brand.tagline}</p>
+            <p className="text-[hsl(var(--muted))]">{brand.tagline}</p>
           ) : (
             <span />
           )}
@@ -271,7 +281,7 @@ export function SidebarNavigation({
         </div>
         {breadcrumbs.length ? (
           <nav aria-label="Breadcrumb">
-            <ol className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-300">
+            <ol className="flex flex-wrap items-center gap-2 text-xs font-medium text-[hsl(var(--muted))]">
               {breadcrumbs.map((crumb, index) => {
                 const isLast = index === breadcrumbs.length - 1;
                 return (
@@ -279,7 +289,7 @@ export function SidebarNavigation({
                     {crumb.href && !isLast ? (
                       <Link
                         href={crumb.href}
-                        className="hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus-visible:ring-white"
+                        className="hover:text-[hsl(var(--foreground))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(var(--background))] focus-visible:ring-[hsl(var(--accent))]"
                       >
                         {crumb.label}
                       </Link>
@@ -289,7 +299,10 @@ export function SidebarNavigation({
                       </span>
                     )}
                     {!isLast ? (
-                      <span aria-hidden className="text-slate-500">
+                      <span
+                        aria-hidden
+                        className="text-[hsl(var(--muted))]"
+                      >
                         &gt;
                       </span>
                     ) : null}
@@ -563,7 +576,7 @@ function renderUserCard(user: SidebarUser, tokens: VariantTokens) {
       <div className="flex min-w-0 flex-1 flex-col text-sm">
         <span className="truncate font-semibold">{user.name}</span>
         {user.caption ? (
-          <span className="truncate text-xs text-slate-400">
+          <span className="truncate text-xs text-[hsl(var(--muted))]">
             {user.caption}
           </span>
         ) : null}
@@ -583,7 +596,7 @@ function renderBrandName(brand: SidebarBrand) {
     return (
       <Link
         href={brand.href}
-        className="flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus-visible:ring-white"
+        className="flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(var(--background))] focus-visible:ring-[hsl(var(--accent))]"
       >
         {content}
       </Link>

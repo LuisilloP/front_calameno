@@ -32,14 +32,14 @@ export default function AddStock() {
   };
 
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Ingreso de producto</h1>
+    <main className="min-h-screen bg-[hsl(var(--surface))] p-6 text-[hsl(var(--foreground))]">
+      <h1 className="mb-4 text-2xl font-semibold">Ingreso de producto</h1>
 
       <form
         onSubmit={handleSubmit}
-        className="grid grid-cols-1 md:grid-cols-2 gap-4"
+        className="grid grid-cols-1 gap-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface-strong))] p-4 shadow-sm md:grid-cols-2"
       >
-        <div className="mb-6">
+        <div className="mb-2 md:col-span-2">
           <Input
             label="Buscar producto"
             value={searchTerm}
@@ -87,7 +87,7 @@ export default function AddStock() {
         <div className="md:col-span-2 text-right">
           <button
             type="submit"
-            className="bg-stone-900 text-white px-4 py-2 rounded hover:bg-stone-700"
+            className="inline-flex items-center rounded-xl bg-[hsl(var(--accent))] px-4 py-2 text-sm font-semibold text-[hsl(var(--accent-foreground))] transition hover:bg-[hsla(var(--accent)/0.9)]"
           >
             Ingresar Producto
           </button>

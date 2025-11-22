@@ -25,7 +25,8 @@ const movementBadgeStyles: Record<string, string> = {
   uso: 'bg-sky-500/10 text-sky-300 border border-sky-500/30',
   traspaso: 'bg-indigo-500/10 text-indigo-300 border border-indigo-500/30',
   ajuste: 'bg-amber-500/10 text-amber-300 border border-amber-500/30',
-  default: 'bg-slate-700/10 text-slate-200 border border-slate-600/40',
+  default:
+    'bg-[hsla(var(--border)/0.2)] text-[hsl(var(--muted-strong))] border border-[hsl(var(--border))]',
 };
 
 const movementTypes = [
@@ -44,12 +45,12 @@ const UsageDonut: React.FC<{ usoPercent: number; ingresoPercent: number }> = ({
   const background = `conic-gradient(#0ea5e9 0 ${uso}%, #34d399 ${uso}% 100%)`;
 
   return (
-    <div className="mt-2 flex items-center gap-3 text-[10px] text-slate-400">
+    <div className="mt-2 flex items-center gap-3 text-[10px] text-[hsl(var(--muted))]">
       <div
-        className="relative h-12 w-12 rounded-full border border-slate-700/70 bg-slate-900/70"
+        className="relative h-12 w-12 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--surface-strong))]"
         style={{ background }}
       >
-        <div className="absolute inset-1 flex items-center justify-center rounded-full bg-slate-950/90 text-[9px] text-slate-400">
+        <div className="absolute inset-1 flex items-center justify-center rounded-full bg-[hsl(var(--surface))] text-[9px] text-[hsl(var(--muted))]">
           {percentageFormatter.format(uso)}%
         </div>
       </div>
@@ -70,13 +71,17 @@ const KpiCard: React.FC<KpiCardProps> = ({ label, value, helper, emphasis, child
   const emphasisClasses =
     emphasis === 'alert'
       ? 'border-red-500/60 bg-red-500/5'
-      : 'border-slate-700/80 bg-slate-900/60';
+      : 'border-[hsl(var(--border))] bg-[hsl(var(--surface-strong))]';
 
   return (
     <div className={`flex flex-col gap-1 rounded-2xl border px-4 py-3 ${emphasisClasses}`}>
-      <span className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</span>
-      <span className="text-2xl font-semibold leading-tight text-slate-50">{value}</span>
-      {helper && <span className="text-[10px] text-slate-500">{helper}</span>}
+      <span className="text-xs font-medium uppercase tracking-wide text-[hsl(var(--muted))]">
+        {label}
+      </span>
+      <span className="text-2xl font-semibold leading-tight text-[hsl(var(--foreground))]">
+        {value}
+      </span>
+      {helper && <span className="text-[10px] text-[hsl(var(--muted))]">{helper}</span>}
       {children}
     </div>
   );
@@ -207,19 +212,19 @@ const DashboardInventarioMVP: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 px-6 py-5 text-slate-50">
+    <div className="min-h-screen bg-[hsl(var(--surface))] px-6 py-5 text-[hsl(var(--foreground))]">
       <header className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Dashboard Inventario Operativo</h1>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-[hsl(var(--muted))]">
             Foto rapida de salud operativa: actividad, stock, consumos y calidad de datos.
           </p>
         </div>
-        <div className="flex flex-col items-end gap-1 text-[10px] text-slate-500">
+        <div className="flex flex-col items-end gap-1 text-[10px] text-[hsl(var(--muted))]">
           <span>{lastUpdatedLabel}</span>
           <button
             type="button"
-            className="rounded-full border border-slate-700/70 px-3 py-1 text-[10px] uppercase tracking-wide text-slate-300 transition hover:border-slate-500"
+            className="rounded-full border border-[hsl(var(--border))] px-3 py-1 text-[10px] uppercase tracking-wide text-[hsl(var(--foreground))] transition hover:border-[hsl(var(--accent))]"
             onClick={() => reload()}
             disabled={movements.isLoading || topUsedProducts.isLoading || topCategories.isLoading}
           >
@@ -256,7 +261,7 @@ const DashboardInventarioMVP: React.FC = () => {
       </section>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <section className="flex flex-col gap-3 rounded-2xl border border-slate-800 bg-slate-950/60 p-4 lg:col-span-2">
+        <section className="flex flex-col gap-3 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] p-4 lg:col-span-2">
           <div className="flex flex-col gap-2 text-[10px]">
             <div className="flex flex-wrap items-center gap-2">
               <span className="uppercase tracking-wide text-slate-400">
@@ -370,7 +375,7 @@ const DashboardInventarioMVP: React.FC = () => {
             </div>
           </div>
 
-          <div className="overflow-auto rounded-xl border border-slate-800/80">
+          <div className="overflow-auto rounded-xl border border-[hsl(var(--border))]">
             <table className="min-w-full text-[10px]">
               <thead className="bg-slate-900/90 text-slate-400">
                 <tr>
@@ -416,8 +421,8 @@ const DashboardInventarioMVP: React.FC = () => {
                       : `${hasFrom ? mov.fromLocation : '-'} -> ${hasTo ? mov.toLocation : '-'}`;
 
                 return (
-                  <tr key={mov.id} className="hover:bg-slate-900/60">
-                    <td className="whitespace-nowrap px-3 py-2 text-slate-300">{mov.dateLabel}</td>
+                  <tr key={mov.id} className="hover:bg-[hsl(var(--surface-strong))]">
+                    <td className="whitespace-nowrap px-3 py-2 text-[hsl(var(--muted))]">{mov.dateLabel}</td>
                     <td className="px-3 py-2 capitalize">
                       <span
                         className={`inline-flex rounded-full border px-2 py-[2px] text-[9px] font-semibold ${
@@ -427,14 +432,14 @@ const DashboardInventarioMVP: React.FC = () => {
                         {mov.type}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-slate-200">{mov.productName}</td>
-                    <td className="px-3 py-2 text-slate-400">{locationLabel}</td>
-                    <td className="px-3 py-2 text-right text-slate-100">
+                    <td className="px-3 py-2 text-[hsl(var(--foreground))]">{mov.productName}</td>
+                    <td className="px-3 py-2 text-[hsl(var(--muted))]">{locationLabel}</td>
+                    <td className="px-3 py-2 text-right text-[hsl(var(--foreground))]">
                       {quantityFormatter.format(mov.quantity)}
                     </td>
-                    <td className="px-3 py-2 text-slate-400">{mov.person || 'Sin dato'}</td>
-                    <td className="px-3 py-2 text-slate-500">{mov.supplier || '-'}</td>
-                    <td className="px-3 py-2 text-slate-500" title={mov.note}>
+                    <td className="px-3 py-2 text-[hsl(var(--muted))]">{mov.person || 'Sin dato'}</td>
+                    <td className="px-3 py-2 text-[hsl(var(--muted))]">{mov.supplier || '-'}</td>
+                    <td className="px-3 py-2 text-[hsl(var(--muted))]" title={mov.note}>
                       {mov.note || 'Sin nota'}
                     </td>
                   </tr>

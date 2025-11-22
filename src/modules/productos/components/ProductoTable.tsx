@@ -26,7 +26,7 @@ type ProductoTableProps = {
 };
 
 const actionButton =
-  "rounded-full border border-slate-700/80 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-200 hover:border-slate-500";
+  "rounded-full border border-[hsl(var(--border))] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[hsl(var(--foreground))] transition hover:border-[hsl(var(--accent))]";
 
 export const ProductoTable = ({
   data,
@@ -60,8 +60,10 @@ export const ProductoTable = ({
       label: "Producto",
       render: (item) => (
         <div>
-          <p className="text-base font-semibold text-white">{item.nombre}</p>
-          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+          <p className="text-base font-semibold text-[hsl(var(--foreground))]">
+            {item.nombre}
+          </p>
+          <p className="text-xs uppercase tracking-[0.3em] text-[hsl(var(--muted))]">
             SKU {item.sku || "N/A"}
           </p>
         </div>
@@ -72,7 +74,7 @@ export const ProductoTable = ({
       label: "Unidad",
       className: "w-40",
       render: (item) => (
-        <span className="text-sm text-slate-200">
+        <span className="text-sm text-[hsl(var(--foreground))]">
           {lookup.uoms.get(item.uom_id) ?? `ID ${item.uom_id}`}
         </span>
       ),
@@ -82,7 +84,7 @@ export const ProductoTable = ({
       label: "Marca",
       className: "w-40",
       render: (item) => (
-        <span className="text-sm text-slate-300">
+        <span className="text-sm text-[hsl(var(--muted))]">
           {item.marca_id
             ? lookup.marcas.get(item.marca_id) ?? `ID ${item.marca_id}`
             : "Sin marca"}
@@ -110,8 +112,8 @@ export const ProductoTable = ({
         <span
           className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
             item.activo
-              ? "border border-emerald-500/60 text-emerald-200"
-              : "border border-slate-600 text-slate-400"
+              ? "border border-[hsla(var(--success)/0.6)] text-[hsl(var(--success))]"
+              : "border border-[hsl(var(--border))] text-[hsl(var(--muted))]"
           }`}
         >
           {item.activo ? "Activo" : "Inactivo"}
@@ -144,8 +146,8 @@ export const ProductoTable = ({
                 type="button"
                 className={`${actionButton} ${
                   item.activo
-                    ? "border-rose-500/70 text-rose-200 hover:border-rose-400"
-                    : "border-emerald-500/70 text-emerald-200 hover:border-emerald-400"
+                    ? "border-[hsla(var(--danger)/0.6)] text-[hsl(var(--danger))] hover:border-[hsl(var(--danger))]"
+                    : "border-[hsla(var(--success)/0.6)] text-[hsl(var(--success))] hover:border-[hsl(var(--success))]"
                 }`}
                 onClick={() => onToggleActive(item)}
                 aria-label={`${
@@ -156,7 +158,7 @@ export const ProductoTable = ({
               </button>
               <button
                 type="button"
-                className={`${actionButton} border-slate-600 text-slate-200`}
+                className={`${actionButton} text-[hsl(var(--muted-strong))]`}
                 onClick={() => onDelete(item)}
                 aria-label={`Eliminar ${item.nombre}`}
               >

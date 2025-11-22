@@ -88,7 +88,7 @@ export const SearchableSelect = ({
       ref={containerRef}
     >
       {label && (
-        <label className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <label className="text-xs font-semibold uppercase tracking-wide text-[hsl(var(--muted))]">
           {label}
         </label>
       )}
@@ -96,15 +96,15 @@ export const SearchableSelect = ({
         type="button"
         disabled={disabled}
         onClick={() => setOpen((prev) => !prev)}
-        className="flex items-center justify-between rounded-xl border border-slate-800/60 bg-slate-900/40 px-3 py-2 text-left text-sm text-slate-100 transition hover:border-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex items-center justify-between rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface-strong))] px-3 py-2 text-left text-sm text-[hsl(var(--foreground))] shadow-sm transition hover:border-[hsl(var(--accent))] disabled:cursor-not-allowed disabled:opacity-50"
       >
         <span className="truncate">{selectedLabel}</span>
-        <div className="flex items-center gap-1 text-slate-500">
+        <div className="flex items-center gap-1 text-[hsl(var(--muted))]">
           {selected.length > 0 && !disabled && (
             <XIcon
               aria-hidden
               size={14}
-              className="hover:text-slate-200"
+              className="hover:text-[hsl(var(--foreground))]"
               onClick={(event) => {
                 event.stopPropagation();
                 clearSelection();
@@ -115,17 +115,17 @@ export const SearchableSelect = ({
         </div>
       </button>
       {open && (
-        <div className="z-30 mt-2 rounded-2xl border border-slate-800/70 bg-slate-900/95 p-3 shadow-2xl backdrop-blur">
+        <div className="z-30 mt-2 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] p-3 shadow-2xl shadow-black/10 backdrop-blur">
           <input
             ref={inputRef}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={placeholder}
-            className="mb-3 w-full rounded-xl border border-slate-800/60 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-slate-600 focus:outline-none"
+            className="mb-3 w-full rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface-muted))] px-3 py-2 text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted))] focus:border-[hsl(var(--accent))] focus:outline-none"
           />
           <div className="max-h-64 space-y-1 overflow-y-auto pr-1">
             {filteredOptions.length === 0 && (
-              <div className="rounded-xl border border-dashed border-slate-800/60 px-3 py-4 text-center text-xs text-slate-500">
+              <div className="rounded-xl border border-dashed border-[hsl(var(--border))] px-3 py-4 text-center text-xs text-[hsl(var(--muted))]">
                 {emptyText}
               </div>
             )}
@@ -138,13 +138,13 @@ export const SearchableSelect = ({
                   onClick={() => toggleOption(option.value)}
                   className={`w-full rounded-xl border px-3 py-2 text-left transition ${
                     active
-                      ? "border-emerald-400/60 bg-emerald-400/10 text-emerald-100"
-                      : "border-slate-800/70 bg-slate-900/40 text-slate-100 hover:border-slate-700"
+                      ? "border-[hsl(var(--accent))] bg-[hsla(var(--accent)/0.12)] text-[hsl(var(--foreground))]"
+                      : "border-[hsl(var(--border))] bg-[hsl(var(--surface-strong))] text-[hsl(var(--foreground))] hover:border-[hsl(var(--accent))]"
                   }`}
                 >
                   <div className="text-sm font-medium">{option.label}</div>
                   {option.description && (
-                    <div className="text-xs text-slate-400">
+                    <div className="text-xs text-[hsl(var(--muted))]">
                       {option.description}
                     </div>
                   )}
