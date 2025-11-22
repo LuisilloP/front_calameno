@@ -568,6 +568,30 @@ const MovementRegistrationPage = () => {
   const showValidationBanner =
     hasTriedSubmit && submitState === "validating" && Object.keys(errors).length;
 
+  const submitButtonUI = useMemo(() => {
+    if (form.tipo === "uso") {
+      return {
+        label: "Registrar uso",
+        classes:
+          "bg-rose-600 text-white hover:bg-rose-500 shadow-lg shadow-rose-900/40",
+        spinner: "text-white",
+      };
+    }
+    if (form.tipo === "ingreso") {
+      return {
+        label: "Registrar ingreso",
+        classes:
+          "bg-emerald-400 text-slate-950 hover:bg-emerald-300 shadow-lg shadow-emerald-900/30",
+        spinner: "text-slate-900",
+      };
+    }
+    return {
+      label: "Registrar movimiento",
+      classes: "bg-slate-50 text-slate-900 hover:bg-white",
+      spinner: "text-slate-900",
+    };
+  }, [form.tipo]);
+
   const isSubmitting = submitState === "submitting";
   return (
     <main className="min-h-screen bg-slate-950/95 p-6 text-slate-50 [button:cursor-pointer] [input:cursor-pointer]">
@@ -920,15 +944,21 @@ const MovementRegistrationPage = () => {
               <button
                 type="submit"
                 className={cn(
-                  "flex items-center gap-2 rounded-2xl bg-slate-50 px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-white",
+                  "flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-semibold transition",
+                  submitButtonUI.classes,
                   isSubmitting && "pointer-events-none opacity-80"
                 )}
                 disabled={isSubmitting}
               >
                 {isSubmitting && (
-                  <Loader2 className="h-4 w-4 animate-spin text-slate-900" />
+                  <Loader2
+                    className={cn(
+                      "h-4 w-4 animate-spin",
+                      submitButtonUI.spinner
+                    )}
+                  />
                 )}
-                Registrar movimiento
+                {submitButtonUI.label}
               </button>
               <button
                 type="button"

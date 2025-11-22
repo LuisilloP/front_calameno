@@ -184,6 +184,19 @@ export interface TopUsedProductsResponse {
   items?: TopUsedProductItemResponse[];
 }
 
+export interface TopCategoryItemResponse {
+  categoria_id?: number;
+  categoria_nombre?: string;
+  total_movimiento?: number;
+  movimientos_count?: number;
+}
+
+export interface TopCategoriesResponse {
+  days?: number;
+  limit?: number;
+  items?: TopCategoryItemResponse[];
+}
+
 export interface AdjustmentProductResponse {
   producto_id?: number;
   producto_nombre?: string;
@@ -244,6 +257,13 @@ export interface TopUsedProduct {
   totalUsado: number;
 }
 
+export interface TopCategory {
+  categoriaId: number;
+  nombre: string;
+  totalMovimiento: number;
+  movimientosCount: number;
+}
+
 export interface AdjustmentTopProduct {
   productoId: number;
   nombre: string;
@@ -267,6 +287,11 @@ export type RecentMovementsParams = {
 };
 
 export type TopUsedParams = {
+  days?: number;
+  limit?: number;
+};
+
+export type TopCategoryParams = {
   days?: number;
   limit?: number;
 };
@@ -336,6 +361,13 @@ export const normalizeTopUsedProduct = (item: TopUsedProductItemResponse): TopUs
   totalUsado: toNumber(item?.total_usado, 0),
 });
 
+export const normalizeTopCategory = (item: TopCategoryItemResponse): TopCategory => ({
+  categoriaId: toNumber(item?.categoria_id, 0, 'top-categories.items[].categoria_id'),
+  nombre: toString(item?.categoria_nombre, 'Sin categoria', 'top-categories.items[].categoria_nombre'),
+  totalMovimiento: toNumber(item?.total_movimiento, 0),
+  movimientosCount: toNumber(item?.movimientos_count, 0),
+});
+
 export const normalizeAdjustmentProduct = (item: AdjustmentProductResponse): AdjustmentTopProduct => ({
   productoId: toNumber(item?.producto_id, 0, 'adjustments-monitor.top_products[].producto_id'),
   nombre: toString(item?.producto_nombre, 'Producto sin nombre', 'adjustments-monitor.top_products[].producto_nombre'),
@@ -355,6 +387,8 @@ export const dashboardApi = {
   getStockByLocation: () => fetchJson<StockByLocationResponse>('/dashboard/stock-by-location'),
   getTopUsedProducts: (params: TopUsedParams) =>
     fetchJson<TopUsedProductsResponse>('/dashboard/top-used-products', { searchParams: params }),
+  getTopCategories: (params: TopCategoryParams) =>
+    fetchJson<TopCategoriesResponse>('/dashboard/top-categories', { searchParams: params }),
   getAdjustmentsMonitor: (params: AdjustmentsParams) =>
     fetchJson<AdjustmentsMonitorResponse>('/dashboard/adjustments-monitor', { searchParams: params }),
 };
