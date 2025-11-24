@@ -28,26 +28,35 @@ const ToastContext = React.createContext<ToastContextType | undefined>(
 
 const variantTokens: Record<ToastVariant, string> = {
   success:
-    "border-emerald-500/50 bg-emerald-500/15 text-emerald-100 dark:border-emerald-500/40 dark:bg-emerald-500/10",
+    "border-[hsla(var(--success)/0.55)] bg-[hsla(var(--success)/0.12)] text-[hsl(var(--success))]",
   error:
-    "border-red-500/50 bg-red-500/15 text-red-100 dark:border-red-500/40 dark:bg-red-500/10",
-  info: "border-slate-600/50 bg-slate-600/15 text-slate-100 dark:border-slate-600/40 dark:bg-slate-700/20",
+    "border-[hsla(var(--danger)/0.55)] bg-[hsla(var(--danger)/0.12)] text-[hsl(var(--danger))]",
+  info:
+    "border-[hsla(var(--info)/0.5)] bg-[hsla(var(--info)/0.12)] text-[hsl(var(--info))]",
 };
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = React.useState<ToastItem[]>([]);
-  const containerRef = React.useRef<HTMLElement | null>(null);
+  const [containerEl] = React.useState<HTMLElement | null>(() => {
+    if (typeof document === "undefined") return null;
+    const existing = document.getElementById("toast-root");
+    if (existing) return existing;
+    const created = document.createElement("div");
+    created.id = "toast-root";
+    return created;
+  });
 
   React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    let el = document.getElementById("toast-root");
-    if (!el) {
-      el = document.createElement("div");
-      el.id = "toast-root";
-      document.body.appendChild(el);
+    if (!containerEl) return;
+    if (!containerEl.isConnected) {
+      document.body.appendChild(containerEl);
     }
-    containerRef.current = el;
-  }, []);
+    return () => {
+      if (containerEl.parentElement) {
+        containerEl.parentElement.removeChild(containerEl);
+      }
+    };
+  }, [containerEl]);
 
   const remove = React.useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -92,7 +101,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={contextValue}>
       {children}
-      {containerRef.current
+      {containerEl
         ? createPortal(
             <div className="pointer-events-none fixed inset-0 z-1000 flex flex-col items-end gap-2 p-4 sm:p-6">
               <div className="ml-auto w-full max-w-sm space-y-2">
@@ -114,7 +123,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                     <button
                       type="button"
                       aria-label="Cerrar notificación"
-                      className="rounded-md px-2 py-1 text-xs text-current/70 transition hover:bg-white/10 hover:text-current"
+                      className="rounded-md px-2 py-1 text-xs text-current/70 transition hover:bg-[hsla(var(--foreground)/0.08)] hover:text-current"
                       onClick={() => remove(t.id)}
                     >
                       Cerrar
@@ -123,7 +132,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 ))}
               </div>
             </div>,
-            containerRef.current
+            containerEl
           )
         : null}
     </ToastContext.Provider>

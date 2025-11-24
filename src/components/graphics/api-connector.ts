@@ -1,4 +1,8 @@
-import axios from "axios";
+import axios, {
+  AxiosInstance,
+  AxiosRequestConfig,
+  InternalAxiosRequestConfig,
+} from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost/api/v1";
 
@@ -23,7 +27,7 @@ export interface ApiResponse<T> {
 
 class ApiConnector {
   private static instance: ApiConnector;
-  private client: any;
+  private client: AxiosInstance;
 
   private constructor() {
     this.client = axios.create({
@@ -55,7 +59,7 @@ class ApiConnector {
     }
 
     // Interceptor para actualizar token si cambia en runtime
-    this.client.interceptors.request.use((config: any) => {
+    this.client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
       const token =
         (typeof window !== "undefined" && localStorage.getItem("auth_token")) ||
         initialToken;
@@ -63,7 +67,7 @@ class ApiConnector {
         config.headers = config.headers || {};
         config.headers["Authorization"] = `Bearer ${token}`;
       }
-      return config;
+      return config as InternalAxiosRequestConfig;
     });
   }
 
@@ -78,10 +82,18 @@ class ApiConnector {
     try {
       const response = await this.client.get("/products");
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const message =
-        error?.response?.data?.message ||
-        error?.message ||
+        typeof error === "object" &&
+        error !== null &&
+        "response" in error &&
+        (error as { response?: { data?: { message?: string } } }).response
+          ?.data?.message
+          ? (error as { response?: { data?: { message?: string } } }).response
+              ?.data?.message
+          : error instanceof Error
+          ? error.message
+          :
         "Error fetching products";
       throw new Error(message);
     }
@@ -93,9 +105,7 @@ export const apiConnector = ApiConnector.getInstance();
 // Helper opcional para actualizar el token manualmente
 export function setApiToken(token: string | null) {
   if (token) {
-    apiConnector["client"].defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${token}`;
+    apiConnector["client"].defaults.headers.common.Authorization = `Bearer ${token}`;
     if (typeof window !== "undefined") {
       localStorage.setItem("auth_token", token);
     }

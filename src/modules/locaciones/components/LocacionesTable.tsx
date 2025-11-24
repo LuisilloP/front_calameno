@@ -8,7 +8,7 @@ import {
 import { Locacion } from "../hooks";
 
 const actionButtonClass =
-  "rounded-full border border-slate-700/80 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-200 hover:border-slate-500";
+  "rounded-full border border-[hsl(var(--border))] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[hsl(var(--foreground))] transition hover:border-[hsl(var(--accent))]";
 
 type LocacionesTableProps = {
   data: Locacion[];
@@ -31,10 +31,10 @@ const columns: AdminTableColumn<Locacion>[] = [
     label: "Nombre",
     render: (item) => (
       <div>
-        <p className="text-base font-medium text-white">
+        <p className="text-base font-medium text-[hsl(var(--foreground))]">
           {item.nombre}
         </p>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-[hsl(var(--muted))]">
           ID #{item.id.toString().padStart(4, "0")}
         </p>
       </div>
@@ -48,8 +48,8 @@ const columns: AdminTableColumn<Locacion>[] = [
       <span
         className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
           item.activa
-            ? "border border-emerald-500/60 text-emerald-200"
-            : "border border-slate-700 text-slate-400"
+            ? "border border-[hsla(var(--success)/0.6)] text-[hsl(var(--success))]"
+            : "border border-[hsl(var(--border))] text-[hsl(var(--muted))]"
         }`}
       >
         {item.activa ? "Activa" : "Inactiva"}
@@ -96,8 +96,8 @@ export const LocacionesTable = ({
                   type="button"
                   className={`${actionButtonClass} ${
                     item.activa
-                      ? "border-rose-500/70 text-rose-200 hover:border-rose-400"
-                      : "border-emerald-500/70 text-emerald-200 hover:border-emerald-400"
+                      ? "border-[hsla(var(--danger)/0.6)] text-[hsl(var(--danger))] hover:border-[hsl(var(--danger))]"
+                      : "border-[hsla(var(--success)/0.6)] text-[hsl(var(--success))] hover:border-[hsl(var(--success))]"
                   }`}
                   onClick={() => onToggleActive(item)}
                 >

@@ -5,7 +5,7 @@ import "./globals.css";
 import { LayoutContent } from "@/components/LayoutContent";
 import { ToastProvider } from "@/components/ui/Toast";
 import { QueryProvider } from "@/components/providers/query-provider";
-import { ThemeProvider } from "@/contexts/ThemeContext";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[hsl(var(--background))] text-[hsl(var(--foreground))] transition-colors`}
       >
         <ThemeProvider>
           <QueryProvider>

@@ -63,7 +63,7 @@ export const AdminEntityFormModal = ({
         <div className="flex items-center justify-end gap-3">
           <button
             type="button"
-            className="rounded-full border border-slate-700/80 px-4 py-2 text-sm text-slate-200 hover:border-slate-500 disabled:opacity-50"
+            className="rounded-full border border-[hsl(var(--border))] px-4 py-2 text-sm text-[hsl(var(--foreground))] transition hover:border-[hsl(var(--accent))] disabled:opacity-50"
             onClick={onClose}
             disabled={loading}
           >
@@ -72,7 +72,7 @@ export const AdminEntityFormModal = ({
           <button
             type="submit"
             form="admin-entity-form"
-            className="inline-flex items-center gap-2 rounded-full bg-emerald-500/80 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-full bg-[hsl(var(--accent))] px-5 py-2 text-sm font-semibold text-[hsl(var(--accent-foreground))] transition hover:bg-[hsla(var(--accent)/0.9)] disabled:opacity-50"
             disabled={loading}
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -128,11 +128,11 @@ const EntityFormFields = ({
       className="space-y-5"
     >
       <div className="space-y-2">
-        <label className="text-xs uppercase tracking-[0.3em] text-slate-400">
+        <label className="text-xs uppercase tracking-[0.3em] text-[hsl(var(--muted))]">
           Nombre
         </label>
         <input
-          className="w-full rounded-2xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-300 focus:outline-none"
+          className="w-full rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface-muted))] px-4 py-3 text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted))] shadow-sm focus:border-[hsl(var(--accent))] focus:outline-none"
           placeholder="Ej. Bodega A"
           value={values.nombre}
           minLength={1}
@@ -145,7 +145,7 @@ const EntityFormFields = ({
           disabled={loading}
         />
         {(formError || errorMessage) && (
-          <p className="text-xs text-rose-300">
+          <p className="text-xs text-[hsl(var(--danger))]">
             {formError ?? errorMessage}
           </p>
         )}
@@ -154,7 +154,7 @@ const EntityFormFields = ({
       <label className="flex items-center gap-3">
         <input
           type="checkbox"
-          className="h-4 w-4 rounded border-slate-700 bg-slate-900 text-emerald-500 focus:ring-emerald-500"
+          className="h-4 w-4 rounded border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--accent))] focus:ring-[hsl(var(--accent))]"
           checked={values.activa}
           onChange={(event) =>
             setValues((prev) => ({
@@ -164,7 +164,7 @@ const EntityFormFields = ({
           }
           disabled={loading}
         />
-        <span className="text-sm text-slate-200">
+        <span className="text-sm text-[hsl(var(--foreground))]">
           Activa por defecto (puedes desactivar luego)
         </span>
       </label>

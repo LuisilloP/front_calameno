@@ -18,11 +18,12 @@ type CatalogEntry<K extends CatalogKind> = {
 };
 
 type CatalogStore = Partial<{
-  [K in CatalogKind]: CatalogEntry<K>;
+  [K in CatalogKind]: CatalogEntry<CatalogKind>;
 }>;
 
 const catalogStore: CatalogStore = {};
 const listeners = new Set<() => void>();
+const STALE_TIME_MS = 1000 * 60 * 5; // 5 minutos para refrescar datos antiguos
 
 const subscribe = (listener: () => void) => {
   listeners.add(listener);
@@ -44,10 +45,10 @@ const catalogFetchers: {
 };
 
 const getEntry = <K extends CatalogKind>(kind: K): CatalogEntry<K> => {
-  let entry = catalogStore[kind];
+  let entry = catalogStore[kind] as CatalogEntry<K> | undefined;
   if (!entry) {
     entry = { status: "idle" } as CatalogEntry<K>;
-    catalogStore[kind] = entry;
+    catalogStore[kind] = entry as CatalogEntry<CatalogKind>;
   }
   return entry as CatalogEntry<K>;
 };
@@ -83,7 +84,15 @@ export const useCatalogResource = <K extends CatalogKind>(
   const runFetch = useCallback(
     (force = false) => {
       const current = getEntry(kind);
-      if (!force && (current.status === "loading" || current.status === "ready")) {
+      const isStale =
+        current.timestamp === undefined ||
+        Date.now() - current.timestamp > STALE_TIME_MS;
+
+      if (
+        !force &&
+        (current.status === "loading" ||
+          (current.status === "ready" && !isStale))
+      ) {
         return;
       }
 
@@ -114,11 +123,14 @@ export const useCatalogResource = <K extends CatalogKind>(
   );
 
   useEffect(() => {
-    const entry = getEntry(kind);
-    if (entry.status === "idle" || entry.status === "error") {
-      runFetch(entry.status === "error");
+    const isStale =
+      snapshot.timestamp === undefined ||
+      Date.now() - snapshot.timestamp > STALE_TIME_MS;
+
+    if (snapshot.status === "idle" || snapshot.status === "error" || isStale) {
+      runFetch(snapshot.status === "error");
     }
-  }, [kind, runFetch]);
+  }, [kind, snapshot.status, snapshot.timestamp, runFetch]);
 
   return {
     status: snapshot.status,
@@ -128,4 +140,16 @@ export const useCatalogResource = <K extends CatalogKind>(
       snapshot.status === "ready" && (snapshot.data?.length ?? 0) === 0,
     reload: () => runFetch(true),
   };
+};
+
+export const invalidateCatalog = (kind?: CatalogKind) => {
+  if (kind) {
+    setEntry(kind, { status: "idle" });
+    return;
+  }
+
+  (Object.keys(catalogStore) as CatalogKind[]).forEach((key) => {
+    catalogStore[key] = { status: "idle" };
+  });
+  notify();
 };

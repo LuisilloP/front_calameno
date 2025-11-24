@@ -27,11 +27,11 @@ export const CategoryMultiSelect = ({
   };
 
   return (
-    <div className="rounded-2xl border border-slate-800/60 bg-slate-900/40 p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+    <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface-strong))] p-4 shadow-sm shadow-black/5">
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[hsl(var(--muted-strong))]">
         Seleccion avanzada
       </p>
-      <p className="text-sm text-slate-300">
+      <p className="text-sm text-[hsl(var(--muted))]">
         Combina categorias para comparar stock en una misma tabla.
       </p>
       <SearchableSelect

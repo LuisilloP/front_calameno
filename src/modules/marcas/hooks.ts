@@ -4,6 +4,7 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  keepPreviousData,
 } from "@tanstack/react-query";
 import { useApiClient } from "@/modules/admin/hooks/useApiClient";
 import { ListParams } from "@/modules/admin/types";
@@ -16,13 +17,14 @@ import {
 } from "./api";
 
 const MARCAS_KEY = "marcas";
+const CATALOG_KEY = "catalogos";
 
 export const useMarcasList = (params: ListParams) => {
   const { request } = useApiClient();
   return useQuery({
     queryKey: [MARCAS_KEY, params],
     queryFn: () => listMarcas(params, request),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 };
 
@@ -32,10 +34,14 @@ export const useCreateMarca = () => {
   return useMutation({
     mutationFn: (payload: MarcaInput) =>
       createMarca(payload, request),
-    onSuccess: () =>
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [MARCAS_KEY],
-      }),
+      });
+      queryClient.invalidateQueries({
+        queryKey: [CATALOG_KEY, "marcas"],
+      });
+    },
   });
 };
 
@@ -45,10 +51,14 @@ export const useUpdateMarca = () => {
   return useMutation({
     mutationFn: ({ id, payload }: { id: number; payload: Partial<MarcaInput> }) =>
       updateMarca(id, payload, request),
-    onSuccess: () =>
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [MARCAS_KEY],
-      }),
+      });
+      queryClient.invalidateQueries({
+        queryKey: [CATALOG_KEY, "marcas"],
+      });
+    },
   });
 };
 
@@ -57,10 +67,14 @@ export const useDeleteMarca = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => deleteMarca(id, request),
-    onSuccess: () =>
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [MARCAS_KEY],
-      }),
+      });
+      queryClient.invalidateQueries({
+        queryKey: [CATALOG_KEY, "marcas"],
+      });
+    },
   });
 };
 

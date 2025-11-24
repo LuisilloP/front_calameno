@@ -138,7 +138,7 @@ export const WeeklyStockExporter = ({
 
       // Filas de productos
       category.products.forEach((product) => {
-        const row: Record<string, any> = {
+        const row: Record<string, string | number | null> = {
           producto: product.name,
           marca: product.brand ?? "-",
           proveedor: product.supplier ?? "-",
@@ -158,7 +158,9 @@ export const WeeklyStockExporter = ({
     });
 
     // Ajuste compacto de columnas
-    worksheet.columns.forEach((col) => {
+    const columns = worksheet.columns ?? [];
+    columns.forEach((col) => {
+      if (!col || typeof col.eachCell !== "function") return;
       let max = 0;
       col.eachCell({ includeEmpty: true }, (cell) => {
         const text = cell.value ? String(cell.value) : "";
@@ -185,7 +187,7 @@ export const WeeklyStockExporter = ({
     <button
       onClick={handleExport}
       disabled={disabled || !data || !data.categories.length}
-      className="group inline-flex items-center gap-2 rounded-2xl border border-sky-500/40 bg-sky-500/10 px-5 py-3 text-sm font-semibold text-sky-100 shadow-[0_15px_35px_rgba(14,165,233,0.25)] transition hover:-translate-y-0.5 hover:border-sky-400 hover:bg-sky-500/20 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+      className="group inline-flex items-center gap-2 rounded-2xl border border-[hsl(var(--accent))] bg-[hsla(var(--accent)/0.12)] px-5 py-3 text-sm font-semibold text-[hsl(var(--foreground))] shadow-[0_15px_35px_rgba(0,0,0,0.12)] transition hover:-translate-y-0.5 hover:border-[hsl(var(--accent))] hover:bg-[hsla(var(--accent)/0.2)] disabled:cursor-not-allowed disabled:opacity-50"
     >
       <Download className="h-4 w-4 transition group-hover:scale-105" />
       Exportar Excel

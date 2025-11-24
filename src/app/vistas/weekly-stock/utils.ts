@@ -74,9 +74,13 @@ export const WEEK_DAYS: DayName[] = [
  * Determina el color de una celda según umbrales de stock
  */
 export function getStockColor(value: number, thresholds = { high: 100, low: 20 }): string {
-  if (value >= thresholds.high) return 'bg-emerald-500/20 text-emerald-200';
-  if (value >= thresholds.low) return 'bg-amber-500/20 text-amber-200';
-  return 'bg-rose-500/20 text-rose-200';
+  if (value >= thresholds.high) {
+    return "bg-[hsla(var(--success)/0.15)] text-[hsl(var(--success))]";
+  }
+  if (value >= thresholds.low) {
+    return "bg-[hsla(var(--accent)/0.15)] text-[hsl(var(--accent))]";
+  }
+  return "bg-[hsla(var(--danger)/0.15)] text-[hsl(var(--danger))]";
 }
 
 /**

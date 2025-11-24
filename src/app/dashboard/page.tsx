@@ -25,7 +25,8 @@ const movementBadgeStyles: Record<string, string> = {
   uso: 'bg-sky-500/10 text-sky-300 border border-sky-500/30',
   traspaso: 'bg-indigo-500/10 text-indigo-300 border border-indigo-500/30',
   ajuste: 'bg-amber-500/10 text-amber-300 border border-amber-500/30',
-  default: 'bg-slate-700/10 text-slate-200 border border-slate-600/40',
+  default:
+    'bg-[hsla(var(--border)/0.2)] text-[hsl(var(--muted-strong))] border border-[hsl(var(--border))]',
 };
 
 const movementTypes = [
@@ -44,12 +45,12 @@ const UsageDonut: React.FC<{ usoPercent: number; ingresoPercent: number }> = ({
   const background = `conic-gradient(#0ea5e9 0 ${uso}%, #34d399 ${uso}% 100%)`;
 
   return (
-    <div className="mt-2 flex items-center gap-3 text-[10px] text-slate-400">
+    <div className="mt-2 flex items-center gap-3 text-[10px] text-[hsl(var(--muted))]">
       <div
-        className="relative h-12 w-12 rounded-full border border-slate-700/70 bg-slate-900/70"
+        className="relative h-12 w-12 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--surface-strong))]"
         style={{ background }}
       >
-        <div className="absolute inset-1 flex items-center justify-center rounded-full bg-slate-950/90 text-[9px] text-slate-400">
+        <div className="absolute inset-1 flex items-center justify-center rounded-full bg-[hsl(var(--surface))] text-[9px] text-[hsl(var(--muted))]">
           {percentageFormatter.format(uso)}%
         </div>
       </div>
@@ -70,13 +71,17 @@ const KpiCard: React.FC<KpiCardProps> = ({ label, value, helper, emphasis, child
   const emphasisClasses =
     emphasis === 'alert'
       ? 'border-red-500/60 bg-red-500/5'
-      : 'border-slate-700/80 bg-slate-900/60';
+      : 'border-[hsl(var(--border))] bg-[hsl(var(--surface-strong))]';
 
   return (
     <div className={`flex flex-col gap-1 rounded-2xl border px-4 py-3 ${emphasisClasses}`}>
-      <span className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</span>
-      <span className="text-2xl font-semibold leading-tight text-slate-50">{value}</span>
-      {helper && <span className="text-[10px] text-slate-500">{helper}</span>}
+      <span className="text-xs font-medium uppercase tracking-wide text-[hsl(var(--muted))]">
+        {label}
+      </span>
+      <span className="text-2xl font-semibold leading-tight text-[hsl(var(--foreground))]">
+        {value}
+      </span>
+      {helper && <span className="text-[10px] text-[hsl(var(--muted))]">{helper}</span>}
       {children}
     </div>
   );
@@ -84,23 +89,13 @@ const KpiCard: React.FC<KpiCardProps> = ({ label, value, helper, emphasis, child
 
 const DashboardInventarioMVP: React.FC = () => {
   const { dashboardState, reload } = useDashboardData();
-  const { kpis, movements, stockByLocation, topUsedProducts, adjustmentsMonitor, error, lastUpdated } =
-    dashboardState;
+  const { kpis, movements, topUsedProducts, topCategories, error, lastUpdated } = dashboardState;
 
   const limit = movements.filters.limit ?? 25;
   const offset = movements.filters.offset ?? 0;
 
-  const [pendingLocacion, setPendingLocacion] = React.useState('');
   const [pendingProducto, setPendingProducto] = React.useState('');
   const [dateRange, setDateRange] = React.useState({ from: '', to: '' });
-
-  React.useEffect(() => {
-    if (movements.filters.locacion_id !== undefined && movements.filters.locacion_id !== null) {
-      setPendingLocacion(String(movements.filters.locacion_id));
-    } else {
-      setPendingLocacion('');
-    }
-  }, [movements.filters.locacion_id]);
 
   React.useEffect(() => {
     if (movements.filters.producto_id !== undefined && movements.filters.producto_id !== null) {
@@ -118,15 +113,6 @@ const DashboardInventarioMVP: React.FC = () => {
     return Number.isFinite(parsed) ? parsed : undefined;
   };
 
-  const applyLocacionFilter = () => {
-    reload({
-      movements: {
-        locacion_id: parseNullableNumber(pendingLocacion),
-        offset: 0,
-      },
-    });
-  };
-
   const applyProductoFilter = () => {
     reload({
       movements: {
@@ -137,12 +123,10 @@ const DashboardInventarioMVP: React.FC = () => {
   };
 
   const resetFilters = () => {
-    setPendingLocacion('');
     setPendingProducto('');
     reload({
       movements: {
         tipo: undefined,
-        locacion_id: undefined,
         producto_id: undefined,
         offset: 0,
       },
@@ -218,28 +202,31 @@ const DashboardInventarioMVP: React.FC = () => {
     ? `Actualizado: ${lastUpdatedFormatter.format(new Date(lastUpdated))}`
     : 'Actualizando...';
 
-  const stockTotal = stockByLocation.items.reduce((acc, item) => acc + item.total, 0);
   const topUsedMax = Math.max(
     ...topUsedProducts.items.map((item) => item.totalUsado),
     1
   );
+  const topCategoryMax = Math.max(
+    ...topCategories.items.map((item) => item.totalMovimiento),
+    1
+  );
 
   return (
-    <div className="min-h-screen bg-slate-950 px-6 py-5 text-slate-50">
+    <div className="min-h-screen bg-[hsl(var(--surface))] px-6 py-5 text-[hsl(var(--foreground))]">
       <header className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Dashboard Inventario Operativo</h1>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-[hsl(var(--muted))]">
             Foto rapida de salud operativa: actividad, stock, consumos y calidad de datos.
           </p>
         </div>
-        <div className="flex flex-col items-end gap-1 text-[10px] text-slate-500">
+        <div className="flex flex-col items-end gap-1 text-[10px] text-[hsl(var(--muted))]">
           <span>{lastUpdatedLabel}</span>
           <button
             type="button"
-            className="rounded-full border border-slate-700/70 px-3 py-1 text-[10px] uppercase tracking-wide text-slate-300 transition hover:border-slate-500"
+            className="rounded-full border border-[hsl(var(--border))] px-3 py-1 text-[10px] uppercase tracking-wide text-[hsl(var(--foreground))] transition hover:border-[hsl(var(--accent))]"
             onClick={() => reload()}
-            disabled={movements.isLoading || stockByLocation.isLoading}
+            disabled={movements.isLoading || topUsedProducts.isLoading || topCategories.isLoading}
           >
             Refrescar
           </button>
@@ -259,16 +246,11 @@ const DashboardInventarioMVP: React.FC = () => {
         </div>
       )}
 
-      <section className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-2">
         <KpiCard
           label="Movimientos ultimos 7 dias"
           value={integerFormatter.format(kpis.totalMovementsLast7d)}
           helper="Incluye ingresos y usos."
-        />
-        <KpiCard
-          label="Productos distintos (7 dias)"
-          value={integerFormatter.format(kpis.distinctProductsLast7d)}
-          helper="Diversidad operativa semanal."
         />
         <KpiCard label="% uso vs ingreso (7 dias)" value="Balance operativo" helper={usageHelper}>
           <UsageDonut
@@ -276,16 +258,10 @@ const DashboardInventarioMVP: React.FC = () => {
             ingresoPercent={kpis.usageVsIngress.ingreso.percentage}
           />
         </KpiCard>
-        <KpiCard
-          label="Ajustes ultimos 30 dias"
-          value={integerFormatter.format(kpis.adjustmentsLast30d)}
-          helper="Si sube, revisar registro y procesos."
-          emphasis="alert"
-        />
       </section>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <section className="flex flex-col gap-3 rounded-2xl border border-slate-800 bg-slate-950/60 p-4 lg:col-span-2">
+        <section className="flex flex-col gap-3 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] p-4 lg:col-span-2">
           <div className="flex flex-col gap-2 text-[10px]">
             <div className="flex flex-wrap items-center gap-2">
               <span className="uppercase tracking-wide text-slate-400">
@@ -310,19 +286,6 @@ const DashboardInventarioMVP: React.FC = () => {
                     </option>
                   ))}
                 </select>
-                <input
-                  type="number"
-                  className="w-28 rounded-xl border border-slate-700/70 bg-slate-900/80 px-2 py-1"
-                  placeholder="Locacion ID"
-                  value={pendingLocacion}
-                  onChange={(event) => setPendingLocacion(event.target.value)}
-                  onBlur={applyLocacionFilter}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter') {
-                      applyLocacionFilter();
-                    }
-                  }}
-                />
                 <input
                   type="number"
                   className="w-28 rounded-xl border border-slate-700/70 bg-slate-900/80 px-2 py-1"
@@ -412,7 +375,7 @@ const DashboardInventarioMVP: React.FC = () => {
             </div>
           </div>
 
-          <div className="overflow-auto rounded-xl border border-slate-800/80">
+          <div className="overflow-auto rounded-xl border border-[hsl(var(--border))]">
             <table className="min-w-full text-[10px]">
               <thead className="bg-slate-900/90 text-slate-400">
                 <tr>
@@ -458,8 +421,8 @@ const DashboardInventarioMVP: React.FC = () => {
                       : `${hasFrom ? mov.fromLocation : '-'} -> ${hasTo ? mov.toLocation : '-'}`;
 
                 return (
-                  <tr key={mov.id} className="hover:bg-slate-900/60">
-                    <td className="whitespace-nowrap px-3 py-2 text-slate-300">{mov.dateLabel}</td>
+                  <tr key={mov.id} className="hover:bg-[hsl(var(--surface-strong))]">
+                    <td className="whitespace-nowrap px-3 py-2 text-[hsl(var(--muted))]">{mov.dateLabel}</td>
                     <td className="px-3 py-2 capitalize">
                       <span
                         className={`inline-flex rounded-full border px-2 py-[2px] text-[9px] font-semibold ${
@@ -469,14 +432,14 @@ const DashboardInventarioMVP: React.FC = () => {
                         {mov.type}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-slate-200">{mov.productName}</td>
-                    <td className="px-3 py-2 text-slate-400">{locationLabel}</td>
-                    <td className="px-3 py-2 text-right text-slate-100">
+                    <td className="px-3 py-2 text-[hsl(var(--foreground))]">{mov.productName}</td>
+                    <td className="px-3 py-2 text-[hsl(var(--muted))]">{locationLabel}</td>
+                    <td className="px-3 py-2 text-right text-[hsl(var(--foreground))]">
                       {quantityFormatter.format(mov.quantity)}
                     </td>
-                    <td className="px-3 py-2 text-slate-400">{mov.person || 'Sin dato'}</td>
-                    <td className="px-3 py-2 text-slate-500">{mov.supplier || '-'}</td>
-                    <td className="px-3 py-2 text-slate-500" title={mov.note}>
+                    <td className="px-3 py-2 text-[hsl(var(--muted))]">{mov.person || 'Sin dato'}</td>
+                    <td className="px-3 py-2 text-[hsl(var(--muted))]">{mov.supplier || '-'}</td>
+                    <td className="px-3 py-2 text-[hsl(var(--muted))]" title={mov.note}>
                       {mov.note || 'Sin nota'}
                     </td>
                   </tr>
@@ -491,35 +454,59 @@ const DashboardInventarioMVP: React.FC = () => {
           <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-3">
             <div className="mb-2 flex items-center justify-between">
               <span className="text-[10px] font-medium uppercase tracking-wide text-slate-400">
-                Stock total por locacion
+                Top categorias con mas movimiento ({topCategories.params.days ?? 0} dias)
               </span>
-              {stockByLocation.isLoading && (
-                <span className="text-[9px] text-slate-500">Cargando...</span>
-              )}
+              <div className="flex items-center gap-1 text-[9px] text-slate-500">
+                <select
+                  className="rounded border border-slate-700/70 bg-slate-900/80 px-1 py-[2px]"
+                  value={topCategories.params.days ?? 30}
+                  onChange={(event) =>
+                    reload({ topCategories: { days: Number(event.target.value) } })
+                  }
+                >
+                  {[7, 14, 30, 60, 90].map((option) => (
+                    <option key={option} value={option}>
+                      {option} d
+                    </option>
+                  ))}
+                </select>
+                <select
+                  className="rounded border border-slate-700/70 bg-slate-900/80 px-1 py-[2px]"
+                  value={topCategories.params.limit ?? 10}
+                  onChange={(event) =>
+                    reload({ topCategories: { limit: Number(event.target.value) } })
+                  }
+                >
+                  {[5, 8, 10, 15].map((option) => (
+                    <option key={option} value={option}>
+                      Top {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
             <div className="flex flex-col gap-1.5">
-              {!stockByLocation.items.length && !stockByLocation.isLoading && (
-                <span className="text-[10px] text-slate-500">Sin datos de stock.</span>
+              {!topCategories.items.length && (
+                <span className="text-[10px] text-slate-500">Sin movimientos en este rango.</span>
               )}
-              {stockByLocation.items.map((item) => {
-                const percentage = stockTotal ? (item.total / stockTotal) * 100 : 0;
-                return (
-                  <div key={item.locationId} className="flex flex-col gap-0.5">
-                    <div className="flex justify-between text-[9px] text-slate-400">
-                      <span>{item.locationName}</span>
-                      <span>
-                        {quantityFormatter.format(item.total)} ({percentageFormatter.format(percentage)}%)
-                      </span>
-                    </div>
-                    <div className="h-2 rounded-full bg-slate-900/80">
-                      <div
-                        className="h-2 rounded-full bg-sky-500/70"
-                        style={{ width: `${percentage}%` }}
-                      />
+              {topCategories.items.map((item, index) => (
+                <div key={`${item.categoriaId}-${index}`} className="flex items-center gap-2">
+                  <span className="w-4 text-[9px] text-slate-500">#{index + 1}</span>
+                  <span className="flex-1 truncate text-[9px] text-slate-300">{item.nombre}</span>
+                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-900/80">
+                    <div
+                      className="h-1.5 rounded-full bg-sky-500/80"
+                      style={{ width: `${(item.totalMovimiento / topCategoryMax) * 100}%` }}
+                    />
+                  </div>
+                  <div className="w-16 text-right text-[9px] text-slate-400">
+                    <div>{quantityFormatter.format(item.totalMovimiento)}</div>
+                    <div className="text-[8px] text-slate-500">
+                      {integerFormatter.format(item.movimientosCount)} movs
                     </div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </div>
 
@@ -544,7 +531,7 @@ const DashboardInventarioMVP: React.FC = () => {
                 </select>
                 <select
                   className="rounded border border-slate-700/70 bg-slate-900/80 px-1 py-[2px]"
-                  value={topUsedProducts.params.limit ?? 5}
+                  value={topUsedProducts.params.limit ?? 10}
                   onChange={(event) =>
                     reload({ topUsed: { limit: Number(event.target.value) } })
                   }
@@ -576,75 +563,6 @@ const DashboardInventarioMVP: React.FC = () => {
                   </span>
                 </div>
               ))}
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2 rounded-2xl border border-red-500/40 bg-red-950/10 p-3">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-red-400">
-                Monitor de ajustes ({adjustmentsMonitor.params.days ?? 0} dias)
-              </span>
-              <div className="flex items-center gap-1 text-[9px] text-red-200">
-                <select
-                  className="rounded border border-red-500/40 bg-red-950/20 px-1 py-[2px]"
-                  value={adjustmentsMonitor.params.days ?? 30}
-                  onChange={(event) =>
-                    reload({ adjustments: { days: Number(event.target.value) } })
-                  }
-                >
-                  {[7, 14, 30, 60, 90].map((option) => (
-                    <option key={option} value={option}>
-                      {option} d
-                    </option>
-                  ))}
-                </select>
-                <select
-                  className="rounded border border-red-500/40 bg-red-950/20 px-1 py-[2px]"
-                  value={adjustmentsMonitor.params.top ?? 5}
-                  onChange={(event) =>
-                    reload({ adjustments: { top: Number(event.target.value) } })
-                  }
-                >
-                  {[5, 10, 15, 20].map((option) => (
-                    <option key={option} value={option}>
-                      Top {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <div className="text-[11px] font-semibold text-slate-100">
-              {integerFormatter.format(adjustmentsMonitor.totalAdjustments)} ajustes registrados
-            </div>
-            <div className="text-[9px] text-slate-400">Top productos con mas ajustes:</div>
-            <ul className="list-inside list-disc text-[9px] text-slate-300">
-              {!adjustmentsMonitor.topProducts.length && (
-                <li className="list-none text-slate-500">Sin ajustes en este rango.</li>
-              )}
-              {adjustmentsMonitor.topProducts.map((product) => (
-                <li key={product.productoId}>
-                  {product.nombre}{' '}
-                  <span className="text-slate-500">({integerFormatter.format(product.ajustes)})</span>
-                </li>
-              ))}
-            </ul>
-            <div className="text-[9px] text-slate-400">Locaciones mas conflictivas:</div>
-            <ul className="list-inside list-disc text-[9px] text-slate-300">
-              {!adjustmentsMonitor.topLocations.length && (
-                <li className="list-none text-slate-500">Sin locaciones destacadas.</li>
-              )}
-              {adjustmentsMonitor.topLocations.map((location) => (
-                <li key={location.locacionId}>
-                  {location.nombre}{' '}
-                  <span className="text-slate-500">
-                    ({integerFormatter.format(location.ajustes)})
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <div className="text-[8px] text-red-300/80">
-              Si los ajustes suben de forma sostenida, revisar procesos de conteo, mermas y la
-              capacitacion del equipo.
             </div>
           </div>
         </section>

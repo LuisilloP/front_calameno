@@ -1,29 +1,60 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
   BarElement,
-  Title,
-  Tooltip,
-  Legend,
+  CategoryScale,
+  Chart as ChartJS,
   ChartData,
   ChartOptions,
+  Legend,
+  LinearScale,
+  Title,
+  Tooltip,
 } from "chart.js";
+import { useTheme } from "next-themes";
 import { Bar } from "react-chartjs-2";
 import { apiConnector, Product } from "./api-connector";
 
-// Registrar los componentes necesarios de Chart.js
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+
+type Palette = {
+  foreground: string;
+  muted: string;
+  surface: string;
+  border: string;
+  grid: string;
+  accent: string;
+  accentSoft: string;
+  danger: string;
+};
+
+const fallbackPalette: Palette = {
+  foreground: "hsl(222 32% 14%)",
+  muted: "hsl(222 12% 45%)",
+  surface: "hsl(0 0% 100%)",
+  border: "hsl(220 16% 86%)",
+  grid: "hsla(220, 16%, 86%, 0.45)",
+  accent: "hsl(21 92% 46%)",
+  accentSoft: "hsla(21, 92%, 46%, 0.18)",
+  danger: "hsl(0 72% 52%)",
+};
+
+const readVar = (token: string, fallback: string) => {
+  if (typeof window === "undefined") return fallback;
+  const value = getComputedStyle(document.documentElement)
+    .getPropertyValue(token)
+    .trim();
+  return value ? `hsl(${value})` : fallback;
+};
+
+const readVarAlpha = (token: string, alpha: number, fallback: string) => {
+  if (typeof window === "undefined") return fallback;
+  const value = getComputedStyle(document.documentElement)
+    .getPropertyValue(token)
+    .trim();
+  return value ? `hsla(${value} / ${alpha})` : fallback;
+};
 
 interface BarChartProps {
   title?: string;
@@ -48,9 +79,26 @@ export const BarChart: React.FC<BarChartProps> = ({
   yAxisLabel = "",
   className = "",
 }) => {
-  const [chartData, setChartData] = useState<ChartData<"bar">>({
+  const { resolvedTheme, theme } = useTheme();
+
+  const palette = useMemo<Palette>(() => {
+    const themeKey = resolvedTheme ?? theme;
+    void themeKey; // recalcula al cambiar el tema
+    return {
+      foreground: readVar("--foreground", fallbackPalette.foreground),
+      muted: readVar("--muted", fallbackPalette.muted),
+      surface: readVar("--surface", fallbackPalette.surface),
+      border: readVar("--border", fallbackPalette.border),
+      grid: readVarAlpha("--border", 0.55, fallbackPalette.grid),
+      accent: readVar("--accent", fallbackPalette.accent),
+      accentSoft: readVarAlpha("--accent", 0.18, fallbackPalette.accentSoft),
+      danger: readVar("--danger", fallbackPalette.danger),
+    };
+  }, [resolvedTheme, theme]);
+
+  const [series, setSeries] = useState<{ labels: string[]; values: number[] }>({
     labels: [],
-    datasets: [],
+    values: [],
   });
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -61,73 +109,109 @@ export const BarChart: React.FC<BarChartProps> = ({
         setLoading(true);
         const response = await apiConnector.getProducts();
 
-        // Ordenar productos por el campo especificado
         const sortedProducts = [...response.data].sort((a, b) => {
           const aValue = parseFloat(String(a[dataField]));
           const bValue = parseFloat(String(b[dataField]));
           return sortDirection === "desc" ? bValue - aValue : aValue - bValue;
         });
 
-        // Tomar la cantidad limitada de productos
         const limitedProducts = sortedProducts.slice(0, limit);
-
-        setChartData({
+        setSeries({
           labels: limitedProducts.map((product) => product.name),
-          datasets: [
-            {
-              label: title || String(dataField),
-              data: limitedProducts.map((product) =>
-                parseFloat(String(product[dataField]))
-              ),
-              backgroundColor: "rgba(53, 162, 235, 0.5)",
-              borderColor: "rgb(53, 162, 235)",
-              borderWidth: 1,
-            },
-          ],
+          values: limitedProducts.map((product) =>
+            parseFloat(String(product[dataField]))
+          ),
         });
-      } catch (err: any) {
-        setError(err.message || "Error al cargar los datos");
+        setError("");
+      } catch (err: unknown) {
+        const message =
+          err && typeof err === "object" && "message" in err
+            ? String((err as { message?: string }).message)
+            : "Error al cargar los datos";
+        setError(message);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [dataField, limit, sortDirection, title]);
+  }, [dataField, limit, sortDirection]);
 
-  const options: ChartOptions<"bar"> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: showLegend,
-        position: "top" as const,
-      },
-      title: {
-        display: !!title,
-        text: title,
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
+  const chartData = useMemo<ChartData<"bar">>(
+    () => ({
+      labels: series.labels,
+      datasets: [
+        {
+          label: title || String(dataField),
+          data: series.values,
+          backgroundColor: palette.accentSoft,
+          borderColor: palette.accent,
+          borderWidth: 1,
+          hoverBackgroundColor: palette.accent,
+          hoverBorderColor: palette.border,
+        },
+      ],
+    }),
+    [dataField, palette.accent, palette.accentSoft, palette.border, series.labels, series.values, title]
+  );
+
+  const options: ChartOptions<"bar"> = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: showLegend,
+          position: "top",
+          labels: {
+            color: palette.foreground,
+          },
+        },
         title: {
-          display: !!yAxisLabel,
-          text: yAxisLabel,
+          display: !!title,
+          text: title,
+          color: palette.foreground,
         },
       },
-      x: {
-        title: {
-          display: !!xAxisLabel,
-          text: xAxisLabel,
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: !!yAxisLabel,
+            text: yAxisLabel,
+            color: palette.muted,
+          },
+          ticks: {
+            color: palette.foreground,
+          },
+          grid: {
+            color: palette.grid,
+          },
+        },
+        x: {
+          title: {
+            display: !!xAxisLabel,
+            text: xAxisLabel,
+            color: palette.muted,
+          },
+          ticks: {
+            color: palette.foreground,
+          },
+          grid: {
+            color: palette.grid,
+          },
         },
       },
-    },
-  };
+    }),
+    [palette.foreground, palette.grid, palette.muted, showLegend, title, xAxisLabel, yAxisLabel]
+  );
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center" style={{ height }}>
+      <div
+        className={`surface-card rounded-2xl border border-[hsl(var(--border))] p-4 text-sm text-[hsl(var(--muted))] ${className}`}
+        style={{ height }}
+      >
         Cargando...
       </div>
     );
@@ -136,8 +220,7 @@ export const BarChart: React.FC<BarChartProps> = ({
   if (error) {
     return (
       <div
-        className="bg-red-100 text-red-700 p-3 rounded"
-        style={{ height: "auto" }}
+        className={`rounded-2xl border border-[hsl(var(--danger))] bg-[hsla(var(--danger)/0.08)] p-4 text-sm text-[hsl(var(--danger))] ${className}`}
       >
         {error}
       </div>
@@ -145,21 +228,12 @@ export const BarChart: React.FC<BarChartProps> = ({
   }
 
   return (
-    <div className={`bg-white p-4 rounded-lg shadow-md ${className}`}>
+    <div
+      className={`surface-card rounded-2xl border border-[hsl(var(--border))] p-4 shadow-sm ${className}`}
+    >
       <div style={{ height }}>
         <Bar data={chartData} options={options} />
       </div>
     </div>
   );
 };
-
-// Ejemplo de uso:
-// <BarChart
-//   title="Top 10 Productos por Stock Mínimo"
-//   dataField="minStock"
-//   sortDirection="desc"
-//   limit={10}
-//   height={400}
-//   yAxisLabel="Stock Mínimo"
-//   xAxisLabel="Productos"
-// />

@@ -36,15 +36,17 @@ export default function UsersPage() {
     try {
       const data = await UsersService.getAll();
       setUsersList(data);
-    } catch (error: any) {
-      setUsersError(error.message || "Error al cargar personas");
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Error al cargar personas";
+      setUsersError(message);
     } finally {
       setLoadingUsers(false);
     }
   };
 
   const update = (field: keyof typeof form, value: string | boolean) => {
-    setForm((s) => ({ ...s, [field]: value as any }));
+    setForm((s) => ({ ...s, [field]: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -66,8 +68,10 @@ export default function UsersPage() {
       alert("Persona creada correctamente");
       await loadUsers();
       setForm({ nombre: "", apellido: "", area: "", activa: true });
-    } catch (error: any) {
-      alert("Error: " + (error.message || "No fue posible guardar"));
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "No fue posible guardar";
+      alert("Error: " + message);
     }
   };
 

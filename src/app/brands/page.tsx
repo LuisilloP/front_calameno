@@ -9,6 +9,9 @@ import {
   CreateMarcaPayload,
 } from "./brands.service";
 
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : "Error inesperado";
+
 export default function BrandsPage() {
   const [formNombre, setFormNombre] = useState("");
   const [marcas, setMarcas] = useState<Marca[]>([]);
@@ -22,8 +25,8 @@ export default function BrandsPage() {
     try {
       const data = await BrandsService.getAll();
       setMarcas(data);
-    } catch (e: any) {
-      setError(e.message || "Error cargando marcas");
+    } catch (error: unknown) {
+      setError(getErrorMessage(error) || "Error cargando marcas");
     } finally {
       setLoading(false);
     }
@@ -50,8 +53,8 @@ export default function BrandsPage() {
       alert("Marca creada");
       setFormNombre("");
       await load();
-    } catch (e: any) {
-      alert("Error: " + (e.message || "No fue posible crear"));
+    } catch (error: unknown) {
+      alert("Error: " + (getErrorMessage(error) || "No fue posible crear"));
     }
   };
 

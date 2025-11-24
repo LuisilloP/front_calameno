@@ -31,17 +31,26 @@ const fmtFecha = (iso?: string) => {
 };
 
 export function PopupAlert({ data, onClose, autoCloseMs = 6000 }: PopupAlertProps) {
-  const [rootEl, setRootEl] = React.useState<HTMLElement | null>(null);
+  const [rootEl] = React.useState<HTMLElement | null>(() => {
+    if (typeof document === "undefined") return null;
+    const existing = document.getElementById("popup-alert-root");
+    if (existing) return existing;
+    const created = document.createElement("div");
+    created.id = "popup-alert-root";
+    return created;
+  });
 
   useEffect(() => {
-    let el = document.getElementById("popup-alert-root");
-    if (!el) {
-      el = document.createElement("div");
-      el.id = "popup-alert-root";
-      document.body.appendChild(el);
+    if (!rootEl) return;
+    if (!rootEl.isConnected) {
+      document.body.appendChild(rootEl);
     }
-    setRootEl(el);
-  }, []);
+    return () => {
+      if (rootEl.parentElement) {
+        rootEl.parentElement.removeChild(rootEl);
+      }
+    };
+  }, [rootEl]);
 
   useEffect(() => {
     const timer = window.setTimeout(onClose, autoCloseMs);
@@ -64,27 +73,29 @@ export function PopupAlert({ data, onClose, autoCloseMs = 6000 }: PopupAlertProp
         : "Bodega origen";
 
   const accentBorder = isIngreso
-    ? "border-emerald-500/60"
-    : "border-red-500/60";
+    ? "border-[hsla(var(--success)/0.6)]"
+    : "border-[hsla(var(--danger)/0.6)]";
   const accentGlow = isIngreso
-    ? "shadow-emerald-500/30"
-    : "shadow-red-500/30";
-  const headingColor = isIngreso ? "text-emerald-300" : "text-red-300";
+    ? "shadow-[0_10px_35px_rgba(34,197,94,0.2)]"
+    : "shadow-[0_10px_35px_rgba(239,68,68,0.2)]";
+  const headingColor = isIngreso
+    ? "text-[hsl(var(--success))]"
+    : "text-[hsl(var(--danger))]";
   const pillBg = isIngreso
-    ? "bg-emerald-500/10 text-emerald-200 border border-emerald-500/40"
-    : "bg-red-500/10 text-red-200 border border-red-500/40";
+    ? "bg-[hsla(var(--success)/0.15)] text-[hsl(var(--success))] border border-[hsla(var(--success)/0.5)]"
+    : "bg-[hsla(var(--danger)/0.15)] text-[hsl(var(--danger))] border border-[hsla(var(--danger)/0.5)]";
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <div
-        className={`relative w-full max-w-xl rounded-3xl border ${accentBorder} bg-slate-900/90 p-7 shadow-2xl ${accentGlow} text-slate-100`}
+        className={`relative w-full max-w-xl rounded-3xl border ${accentBorder} bg-[hsl(var(--surface))] p-7 text-[hsl(var(--foreground))] shadow-2xl ${accentGlow}`}
       >
         <button
           type="button"
           aria-label="Cerrar"
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-full border border-slate-700/60 bg-slate-800/60 p-1.5 text-slate-300 transition hover:border-slate-500 hover:text-white"
+          className="absolute right-4 top-4 rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--surface-strong))] p-1.5 text-[hsl(var(--muted))] transition hover:border-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))]"
         >
           <X className="h-5 w-5" />
         </button>
@@ -100,7 +111,7 @@ export function PopupAlert({ data, onClose, autoCloseMs = 6000 }: PopupAlertProp
           </p>
           <p>
             <span className="font-semibold">Cantidad:</span> {data.cantidad}{" "}
-            {data.unidad ? <span className="text-slate-300">({data.unidad})</span> : null}
+            {data.unidad ? <span className="text-[hsl(var(--muted))]">({data.unidad})</span> : null}
           </p>
           {locacionLabel && (
             <p>
@@ -123,7 +134,7 @@ export function PopupAlert({ data, onClose, autoCloseMs = 6000 }: PopupAlertProp
             </p>
           )}
           {data.fechaIso && (
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[hsl(var(--muted))]">
               Registrado: {fmtFecha(data.fechaIso)}
             </p>
           )}
@@ -132,7 +143,7 @@ export function PopupAlert({ data, onClose, autoCloseMs = 6000 }: PopupAlertProp
           <button
             type="button"
             onClick={onClose}
-            className={`rounded-xl border px-5 py-2 text-sm font-semibold transition ${isIngreso ? "border-emerald-500/50 bg-emerald-600/20 hover:border-emerald-400 hover:bg-emerald-600/30" : "border-red-500/50 bg-red-600/20 hover:border-red-400 hover:bg-red-600/30"}`}
+            className={`rounded-xl border px-5 py-2 text-sm font-semibold transition ${isIngreso ? "border-[hsl(var(--success))] bg-[hsla(var(--success)/0.12)] hover:bg-[hsla(var(--success)/0.2)]" : "border-[hsl(var(--danger))] bg-[hsla(var(--danger)/0.12)] hover:bg-[hsla(var(--danger)/0.2)]"}`}
           >
             Cerrar
           </button>

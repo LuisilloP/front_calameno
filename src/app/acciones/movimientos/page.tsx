@@ -94,19 +94,6 @@ const CatalogAutocomplete = ({
   const [open, setOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const previousValue = useRef<number | undefined>(value);
-
-  useEffect(() => {
-    if (previousValue.current !== value) {
-      previousValue.current = value;
-      if (selected) {
-        setQuery(selected.label);
-        setIsTyping(false);
-      } else if (!isTyping) {
-        setQuery("");
-      }
-    }
-  }, [selected, value, isTyping]);
 
   const handleSelect = (opt: CatalogOption) => {
     onChange(opt.id);
@@ -140,15 +127,14 @@ const CatalogAutocomplete = ({
       }`.toLowerCase();
       return haystack.includes(query.toLowerCase());
     }) ?? [];
-  const displayValue =
-    isTyping || !selected ? query : query || selected.label;
+  const displayValue = isTyping ? query : selected?.label ?? "";
 
   return (
     <div className="relative space-y-1" ref={containerRef}>
-      <label className="text-sm font-semibold text-slate-200">{label}</label>
+      <label className="text-sm font-semibold text-[hsl(var(--muted-strong))]">{label}</label>
       <div
         className={cn(
-          "rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-2 focus-within:border-slate-300",
+          "rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface-strong))] px-4 py-2 focus-within:border-[hsl(var(--accent))]",
           disabled && "opacity-60 pointer-events-none",
           error && "border-red-500/70"
         )}
@@ -158,7 +144,7 @@ const CatalogAutocomplete = ({
       >
         <div className="flex items-center gap-2">
           <input
-            className="w-full bg-transparent text-sm text-slate-50 placeholder:text-slate-500 focus:outline-none cursor-pointer"
+            className="w-full bg-transparent text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted))] focus:outline-none cursor-pointer"
             placeholder={placeholder}
             value={displayValue}
             disabled={disabled || status !== "ready"}
@@ -178,7 +164,7 @@ const CatalogAutocomplete = ({
           {value && (
             <button
               type="button"
-              className="text-xs text-slate-400 hover:text-slate-100"
+              className="text-xs text-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]"
               onClick={(event) => {
                 event.stopPropagation();
                 onChange(undefined);
@@ -192,12 +178,12 @@ const CatalogAutocomplete = ({
         </div>
       </div>
       {helperText && (
-        <p className="text-xs text-slate-400">{helperText}</p>
+        <p className="text-xs text-[hsl(var(--muted))]">{helperText}</p>
       )}
       {error && <p className="text-xs text-red-400">{error}</p>}
 
       {status === "loading" && (
-        <p className="text-xs text-slate-400 flex items-center gap-2">
+        <p className="text-xs text-[hsl(var(--muted))] flex items-center gap-2">
           <Loader2 className="h-4 w-4 animate-spin" />
           Cargando catálogo...
         </p>
@@ -223,9 +209,9 @@ const CatalogAutocomplete = ({
       )}
 
       {status === "ready" && open && (
-        <div className="absolute left-0 right-0 z-30 mt-1 max-h-64 overflow-y-auto rounded-xl border border-slate-800 bg-slate-900/95 shadow-2xl">
+        <div className="absolute left-0 right-0 z-30 mt-1 max-h-64 overflow-y-auto rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] shadow-2xl shadow-black/10">
           {filtered.length === 0 ? (
-            <div className="px-4 py-3 text-sm text-slate-400">
+            <div className="px-4 py-3 text-sm text-[hsl(var(--muted))]">
               Sin coincidencias
             </div>
           ) : (
@@ -234,8 +220,8 @@ const CatalogAutocomplete = ({
                 type="button"
                 key={opt.id}
                 className={cn(
-                  "flex w-full flex-col px-4 py-2 text-left text-sm hover:bg-slate-800/60",
-                  value === opt.id && "bg-slate-800/80 text-slate-50"
+                  "flex w-full flex-col px-4 py-2 text-left text-sm hover:bg-[hsl(var(--surface-strong))]",
+                  value === opt.id && "bg-[hsla(var(--accent)/0.1)] text-[hsl(var(--foreground))]"
                 )}
                 onMouseDown={(event) => {
                   event.preventDefault(); // evita que el blur cierre antes de seleccionar
@@ -243,11 +229,11 @@ const CatalogAutocomplete = ({
                 }}
                 onClick={() => handleSelect(opt)}
               >
-                <span className="font-semibold text-slate-100">
+                <span className="font-semibold text-[hsl(var(--foreground))]">
                   {opt.label}
                 </span>
                 {(opt.caption || opt.meta) && (
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-[hsl(var(--muted))]">
                     {[opt.caption, opt.meta].filter(Boolean).join(" · ")}
                   </span>
                 )}
@@ -270,11 +256,11 @@ const ReadOnlyLocationCard = ({
   helperText?: string;
 }) => (
   <div className="space-y-2">
-    <label className="text-sm font-semibold text-slate-200">{label}</label>
-    <div className="rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-2 text-sm text-slate-100">
+    <label className="text-sm font-semibold text-[hsl(var(--muted-strong))]">{label}</label>
+    <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface-strong))] px-4 py-2 text-sm text-[hsl(var(--foreground))]">
       {value}
     </div>
-    {helperText && <p className="text-xs text-slate-400">{helperText}</p>}
+    {helperText && <p className="text-xs text-[hsl(var(--muted))]">{helperText}</p>}
   </div>
 );
 
@@ -291,27 +277,27 @@ const initialFormState: MovementFormState = {
 };
 
 const movementTypeBadge: Record<MovementType, string> = {
-  ingreso: "bg-emerald-500/10 text-emerald-300 border border-emerald-500/30",
-  uso: "bg-sky-500/10 text-sky-300 border border-sky-500/30",
-  traspaso: "bg-indigo-500/10 text-indigo-300 border border-indigo-500/30",
-  ajuste: "bg-amber-500/10 text-amber-300 border border-amber-500/30",
+  ingreso: "bg-[hsla(var(--success)/0.12)] text-[hsl(var(--success))] border border-[hsla(var(--success)/0.6)]",
+  uso: "bg-[hsla(var(--info)/0.12)] text-[hsl(var(--info))] border border-[hsla(var(--info)/0.6)]",
+  traspaso: "bg-[hsla(var(--accent)/0.12)] text-[hsl(var(--accent))] border border-[hsla(var(--accent)/0.6)]",
+  ajuste: "bg-[hsla(var(--danger)/0.12)] text-[hsl(var(--danger))] border border-[hsla(var(--danger)/0.6)]",
 };
 
 const movementTypeAccent: Record<MovementType, string> = {
   ingreso:
-    "border-emerald-400/80 bg-emerald-500/10 hover:border-emerald-300 text-emerald-100",
-  uso: "border-sky-400/80 bg-sky-500/10 hover:border-sky-300 text-sky-100",
+    "border-[hsla(var(--success)/0.6)] bg-[hsla(var(--success)/0.12)] hover:border-[hsl(var(--success))] text-[hsl(var(--foreground))]",
+  uso: "border-[hsla(var(--info)/0.6)] bg-[hsla(var(--info)/0.12)] hover:border-[hsl(var(--info))] text-[hsl(var(--foreground))]",
   traspaso:
-    "border-indigo-400/80 bg-indigo-500/10 hover:border-indigo-300 text-indigo-100",
+    "border-[hsla(var(--accent)/0.6)] bg-[hsla(var(--accent)/0.12)] hover:border-[hsl(var(--accent))] text-[hsl(var(--foreground))]",
   ajuste:
-    "border-amber-400/80 bg-amber-500/10 hover:border-amber-300 text-amber-100",
+    "border-[hsla(var(--danger)/0.6)] bg-[hsla(var(--danger)/0.12)] hover:border-[hsl(var(--danger))] text-[hsl(var(--foreground))]",
 };
 
 const movementTypeHeadingColor: Record<MovementType, string> = {
-  ingreso: "text-emerald-100",
-  uso: "text-sky-100",
-  traspaso: "text-indigo-100",
-  ajuste: "text-amber-100",
+  ingreso: "text-[hsl(var(--success))]",
+  uso: "text-[hsl(var(--info))]",
+  traspaso: "text-[hsl(var(--accent))]",
+  ajuste: "text-[hsl(var(--danger))]",
 };
 
 const MovementRegistrationPage = () => {
@@ -344,10 +330,11 @@ const MovementRegistrationPage = () => {
   const unidadMap = useMemo(() => {
     const map = new Map<number, string>();
     uoms.data?.forEach((unidad) => {
-      map.set(
-        unidad.id,
-        unidad.nombre.trim()
-      );
+      const label =
+        unidad.abreviatura?.trim() || unidad.nombre?.trim() || "";
+      if (label) {
+        map.set(unidad.id, label);
+      }
     });
     return map;
   }, [uoms.data]);
@@ -367,13 +354,20 @@ const MovementRegistrationPage = () => {
 
   const productoOptions = useMemo<CatalogOption[] | undefined>(() => {
     if (!productos.data) return undefined;
-    return productos.data.map((producto) => ({
-      id: producto.id,
-      label: producto.nombre,
-      caption: producto.sku ? `SKU ${producto.sku}` : undefined,
-      meta: formatUom(producto),
-    }));
-  }, [productos.data]);
+    return productos.data.map((producto) => {
+      const inlineUnit = formatUom(producto);
+      const catalogUnit = producto.uom_id
+        ? unidadMap.get(producto.uom_id)
+        : undefined;
+      const meta = catalogUnit ?? inlineUnit;
+      return {
+        id: producto.id,
+        label: producto.nombre,
+        caption: producto.sku ? `SKU ${producto.sku}` : undefined,
+        meta: meta || undefined,
+      };
+    });
+  }, [productos.data, unidadMap]);
 
   const allLocationOptions = useMemo<CatalogOption[] | undefined>(() => {
     if (!locaciones.data) return undefined;
@@ -445,6 +439,8 @@ const MovementRegistrationPage = () => {
     return map;
   }, [proveedores.data]);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
+  // Sincroniza con la API de stock cuando cambia el producto seleccionado.
   useEffect(() => {
     if (!form.productoId) {
       setStockInfo({ status: "idle" });
@@ -475,6 +471,7 @@ const MovementRegistrationPage = () => {
 
     return () => controller.abort();
   }, [form.productoId, stockLocationId]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // popup toasts are handled by ToastProvider via useToast
 
@@ -508,9 +505,13 @@ const MovementRegistrationPage = () => {
     setApiError(null);
 
     const validation = validateMovementForm(form);
-    setErrors(validation.errors);
+    const stockErrors = validation.isValid
+      ? validateStockForUse(validation.quantity)
+      : {};
+    const mergedErrors = { ...validation.errors, ...stockErrors };
+    setErrors(mergedErrors);
 
-    if (!validation.isValid) {
+    if (!validation.isValid || Object.keys(stockErrors).length) {
       return;
     }
 
@@ -568,25 +569,52 @@ const MovementRegistrationPage = () => {
   const showValidationBanner =
     hasTriedSubmit && submitState === "validating" && Object.keys(errors).length;
 
+  const validateStockForUse = (quantity?: number): MovementFormErrors => {
+    if (form.tipo !== "uso") return {};
+
+    if (stockInfo.status !== "ready" || typeof stockInfo.value !== "number") {
+      return {
+        form:
+          "No pudimos validar el stock disponible en bodega central. Recarga el producto antes de registrar el uso.",
+      };
+    }
+
+    const available = stockInfo.value;
+    if (available <= 1) {
+      return {
+        quantity:
+          "El stock es menor o igual a 1 en la bodega central. No puedes registrar este uso.",
+      };
+    }
+
+    if (typeof quantity === "number" && quantity > available) {
+      return {
+        quantity: `No puedes registrar ${quantity} porque supera el stock disponible (${available}).`,
+      };
+    }
+
+    return {};
+  };
+
   const isSubmitting = submitState === "submitting";
   return (
-    <main className="min-h-screen bg-slate-950/95 p-6 text-slate-50 [button:cursor-pointer] [input:cursor-pointer]">
+    <main className="min-h-screen bg-[hsl(var(--surface))] p-6 text-[hsl(var(--foreground))] [button:cursor-pointer] [input:cursor-pointer]">
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
-        <header className="flex flex-col gap-2 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 shadow-2xl shadow-slate-900/50">
+        <header className="flex flex-col gap-2 rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] p-6 shadow-lg shadow-black/10">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm uppercase tracking-[0.2em] text-slate-500">
+              <p className="text-sm uppercase tracking-[0.2em] text-[hsl(var(--muted))]">
                 Movimientos
               </p>
-              <h1 className="text-3xl font-semibold text-slate-50">
+              <h1 className="text-3xl font-semibold text-[hsl(var(--foreground))]">
                 Registrar movimiento de inventario
               </h1>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-[hsl(var(--muted))]">
                 Controla ingresos y usos desde una sola
                 pantalla.
               </p>
             </div>
-            <div className="flex flex-wrap gap-2 text-xs text-slate-400">
+            <div className="flex flex-wrap gap-2 text-xs text-[hsl(var(--muted))]">
               <StatusPill
                 label="Productos"
                 status={productos.status}
@@ -665,7 +693,7 @@ const MovementRegistrationPage = () => {
 
         <section className="grid gap-6 lg:grid-cols-[2fr,1fr]">
           <form
-            className="space-y-6 rounded-3xl border border-slate-800 bg-slate-900/60 p-6 shadow-2xl shadow-slate-900/50"
+            className="space-y-6 rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] p-6 shadow-lg shadow-black/10"
             onSubmit={handleSubmit}
           >
             <div className="grid gap-3 sm:grid-cols-2">
@@ -920,13 +948,13 @@ const MovementRegistrationPage = () => {
               <button
                 type="submit"
                 className={cn(
-                  "flex items-center gap-2 rounded-2xl bg-slate-50 px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-white",
+                  "flex items-center gap-2 rounded-2xl bg-[hsl(var(--accent))] px-6 py-3 text-sm font-semibold text-[hsl(var(--accent-foreground))] transition hover:bg-[hsla(var(--accent)/0.9)]",
                   isSubmitting && "pointer-events-none opacity-80"
                 )}
                 disabled={isSubmitting}
               >
                 {isSubmitting && (
-                  <Loader2 className="h-4 w-4 animate-spin text-slate-900" />
+                  <Loader2 className="h-4 w-4 animate-spin text-[hsl(var(--accent-foreground))]" />
                 )}
                 Registrar movimiento
               </button>
@@ -1044,16 +1072,16 @@ const StatusPill = ({
   onRetry?: () => void;
 }) => {
   const content = {
-    idle: { text: "Pendiente", color: "text-slate-400 border-slate-700/70" },
+    idle: { text: "Pendiente", color: "text-[hsl(var(--muted))] border-[hsl(var(--border))]" },
     loading: {
       text: "Cargando",
-      color: "text-slate-200 border-slate-500/40",
+      color: "text-[hsl(var(--foreground))] border-[hsl(var(--border))]",
       spinner: true,
     },
-    ready: { text: "Listo", color: "text-emerald-300 border-emerald-500/50" },
+    ready: { text: "Listo", color: "text-[hsl(var(--success))] border-[hsla(var(--success)/0.6)]" },
     error: {
       text: "Error",
-      color: "text-amber-300 border-amber-500/40",
+      color: "text-[hsl(var(--danger))] border-[hsla(var(--danger)/0.6)]",
       retry: true,
     },
   }[status];

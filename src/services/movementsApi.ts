@@ -177,22 +177,30 @@ const listProductos = async (): Promise<ProductoCatalogItem[]> => {
 };
 
 const listLocaciones = async (): Promise<LocacionCatalogItem[]> => {
-  const response = await request<unknown>("/locaciones");
+  const response = await request<unknown>("/locaciones", {
+    query: { skip: 0, limit: 500 },
+  });
   return normalizeListResponse<LocacionCatalogItem>(response);
 };
 
 const listPersonas = async (): Promise<PersonaCatalogItem[]> => {
-  const response = await request<unknown>("/personas");
+  const response = await request<unknown>("/personas", {
+    query: { skip: 0, limit: 500 },
+  });
   return normalizeListResponse<PersonaCatalogItem>(response);
 };
 
 const listProveedores = async (): Promise<ProveedorCatalogItem[]> => {
-  const response = await request<unknown>("/proveedores");
+  const response = await request<unknown>("/proveedores", {
+    query: { skip: 0, limit: 500 },
+  });
   return normalizeListResponse<ProveedorCatalogItem>(response);
 };
 
 const listUoms = async (): Promise<UomCatalogItem[]> => {
-  const response = await request<unknown>("/uoms");
+  const response = await request<unknown>("/uoms", {
+    query: { skip: 0, limit: 500 },
+  });
   return normalizeListResponse<UomCatalogItem>(response);
 };
 

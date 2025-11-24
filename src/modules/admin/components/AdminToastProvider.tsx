@@ -43,10 +43,14 @@ const icons = {
 };
 
 const toneClasses = {
-  success: "border-emerald-500/60 text-emerald-100 bg-emerald-500/10",
-  error: "border-rose-500/60 text-rose-100 bg-rose-500/10",
-  warning: "border-amber-400/60 text-amber-100 bg-amber-400/10",
-  info: "border-sky-500/60 text-sky-100 bg-sky-500/10",
+  success:
+    "border-[hsla(var(--success)/0.5)] text-[hsl(var(--success))] bg-[hsla(var(--success)/0.12)]",
+  error:
+    "border-[hsla(var(--danger)/0.55)] text-[hsl(var(--danger))] bg-[hsla(var(--danger)/0.12)]",
+  warning:
+    "border-[hsla(var(--accent)/0.5)] text-[hsl(var(--accent))] bg-[hsla(var(--accent)/0.12)]",
+  info:
+    "border-[hsla(var(--info)/0.5)] text-[hsl(var(--info))] bg-[hsla(var(--info)/0.12)]",
 };
 
 export const AdminToastProvider = ({
@@ -103,21 +107,23 @@ export const AdminToastProvider = ({
           return (
             <div
               key={toast.id}
-              className={`pointer-events-auto flex max-w-xs items-start gap-3 rounded-2xl border px-4 py-3 shadow-xl ${toneClasses[tone]}`}
+              className={`pointer-events-auto flex max-w-xs items-start gap-3 rounded-2xl border px-4 py-3 shadow-xl shadow-black/15 ${toneClasses[tone]}`}
             >
-              <div className="mt-0.5 text-white">
+              <div className="mt-0.5 text-[hsl(var(--foreground))]">
                 {icons[tone] ?? icons.info}
               </div>
               <div className="flex-1 text-sm">
                 {toast.title && (
-                  <p className="font-semibold text-white">{toast.title}</p>
+                  <p className="font-semibold text-[hsl(var(--foreground))]">
+                    {toast.title}
+                  </p>
                 )}
-                <p className="text-slate-100">{toast.message}</p>
+                <p className="text-[hsl(var(--foreground))]">{toast.message}</p>
               </div>
               <button
                 type="button"
                 onClick={() => toast.id && dismissToast(toast.id)}
-                className="text-slate-200 hover:text-white"
+                className="text-[hsl(var(--muted))] transition hover:text-[hsl(var(--foreground))]"
               >
                 <X className="h-4 w-4" />
               </button>

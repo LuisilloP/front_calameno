@@ -6,25 +6,25 @@ import {
   SidebarNavigationProps,
 } from "@/components/navigation/SidebarNavigation";
 import {
-  ArrowUpDownIcon,
-  CircleQuestionMarkIcon,
   ClipboardListIcon,
   EyeIcon,
   LandPlotIcon,
   LayoutDashboardIcon,
   PackageMinusIcon,
   PackagePlusIcon,
-  Settings2Icon,
   TagIcon,
   TruckIcon,
   Users2,
-  WarehouseIcon,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
+
 export default function ProductSidebar() {
   const { theme, setTheme, resolvedTheme: nextResolvedTheme } = useTheme();
-  const resolvedTheme = (nextResolvedTheme ?? theme) === "dark" ? "dark" : "light";
+  const resolvedTheme =
+    typeof window !== "undefined" && (nextResolvedTheme ?? theme) === "dark"
+      ? "dark"
+      : "light";
 
   const handleThemeToggle = useCallback(() => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");

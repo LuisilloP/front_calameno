@@ -4,9 +4,11 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  keepPreviousData,
 } from "@tanstack/react-query";
 import { useApiClient } from "@/modules/admin/hooks/useApiClient";
 import { ListParams } from "@/modules/admin/types";
+import { invalidateCatalog } from "@/hooks/useCatalogResource";
 import {
   createProducto,
   deleteProducto,
@@ -23,13 +25,14 @@ import { ProductoPayload, CatalogItem } from "./types";
 const PRODUCTOS_KEY = "productos";
 const CATALOG_KEY = "catalogos";
 const STALE_TIME = 1000 * 60 * 10;
+const invalidateProductoCatalog = () => invalidateCatalog("productos");
 
 export const useProductosList = (params: ListParams) => {
   const { request } = useApiClient();
   return useQuery({
     queryKey: [PRODUCTOS_KEY, params],
     queryFn: () => listProductos(params, request),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 };
 
@@ -52,10 +55,12 @@ export const useCreateProducto = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: ProductoPayload) => createProducto(payload, request),
-    onSuccess: () =>
+    onSuccess: () => {
+      invalidateProductoCatalog();
       queryClient.invalidateQueries({
         queryKey: [PRODUCTOS_KEY],
-      }),
+      });
+    },
   });
 };
 
@@ -70,10 +75,12 @@ export const useUpdateProducto = () => {
       id: number;
       payload: Partial<ProductoPayload>;
     }) => updateProducto(id, payload, request),
-    onSuccess: () =>
+    onSuccess: () => {
+      invalidateProductoCatalog();
       queryClient.invalidateQueries({
         queryKey: [PRODUCTOS_KEY],
-      }),
+      });
+    },
   });
 };
 
@@ -82,10 +89,12 @@ export const useDeleteProducto = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => deleteProducto(id, request),
-    onSuccess: () =>
+    onSuccess: () => {
+      invalidateProductoCatalog();
       queryClient.invalidateQueries({
         queryKey: [PRODUCTOS_KEY],
-      }),
+      });
+    },
   });
 };
 
@@ -95,10 +104,12 @@ export const useToggleProducto = () => {
   return useMutation({
     mutationFn: ({ id, activo }: { id: number; activo: boolean }) =>
       toggleProductoActivo(id, activo, request),
-    onSuccess: () =>
+    onSuccess: () => {
+      invalidateProductoCatalog();
       queryClient.invalidateQueries({
         queryKey: [PRODUCTOS_KEY],
-      }),
+      });
+    },
   });
 };
 

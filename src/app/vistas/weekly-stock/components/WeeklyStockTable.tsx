@@ -20,7 +20,7 @@ export const WeeklyStockTable: React.FC<WeeklyStockTableProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="rounded-2xl border border-slate-800/50 bg-slate-950/30 px-6 py-8 text-center text-slate-400">
+      <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface-strong))] px-6 py-8 text-center text-[hsl(var(--muted))]">
         Cargando datos...
       </div>
     );
@@ -28,7 +28,7 @@ export const WeeklyStockTable: React.FC<WeeklyStockTableProps> = ({
 
   if (products.length === 0) {
     return (
-      <div className="rounded-2xl border border-slate-800/50 bg-slate-950/30 px-6 py-8 text-center text-slate-400">
+      <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface-strong))] px-6 py-8 text-center text-[hsl(var(--muted))]">
         No hay productos en esta categoria.
       </div>
     );
@@ -36,11 +36,11 @@ export const WeeklyStockTable: React.FC<WeeklyStockTableProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto rounded-2xl border border-slate-800/60 bg-slate-950/30">
-        <table className="min-w-full divide-y divide-slate-800/60 text-sm text-slate-200">
-          <thead className="bg-slate-900/70 text-[11px] uppercase tracking-[0.2em] text-slate-500">
+      <div className="overflow-x-auto rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))]">
+        <table className="min-w-full divide-y divide-[hsl(var(--border))] text-sm text-[hsl(var(--foreground))]">
+          <thead className="bg-[hsl(var(--surface-strong))] text-[11px] uppercase tracking-[0.2em] text-[hsl(var(--muted))]">
             <tr>
-              <th className="sticky left-0 z-10 bg-slate-900/80 px-4 py-3 text-left">
+              <th className="sticky left-0 z-10 bg-[hsl(var(--surface-strong))] px-4 py-3 text-left">
                 Producto
               </th>
               <th className="px-4 py-3 text-left">Marca</th>
@@ -51,25 +51,27 @@ export const WeeklyStockTable: React.FC<WeeklyStockTableProps> = ({
                   {getDayLabel(day)}
                 </th>
               ))}
-              <th className="px-4 py-3 text-center text-sky-300">Stock final</th>
+              <th className="px-4 py-3 text-center text-[hsl(var(--muted-strong))]">
+                Stock final
+              </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60 bg-slate-950/30">
+          <tbody className="divide-y divide-[hsl(var(--border))] bg-[hsl(var(--surface))]">
             {products.map((product) => (
               <tr
                 key={product.id}
-                className="text-sm text-slate-300 transition hover:bg-slate-900/40"
+                className="text-sm text-[hsl(var(--foreground))] transition hover:bg-[hsl(var(--surface-strong))]"
               >
-                <td className="sticky left-0 z-10 bg-slate-950/60 px-4 py-3 font-semibold text-white backdrop-blur">
+                <td className="sticky left-0 z-10 bg-[hsl(var(--surface-strong))] px-4 py-3 font-semibold text-[hsl(var(--foreground))] backdrop-blur">
                   {product.name}
                 </td>
-                <td className="px-4 py-3 text-slate-400">
+                <td className="px-4 py-3 text-[hsl(var(--muted))]">
                   {product.brand || "-"}
                 </td>
-                <td className="px-4 py-3 text-slate-400">
+                <td className="px-4 py-3 text-[hsl(var(--muted))]">
                   {product.supplier || "-"}
                 </td>
-                <td className="px-4 py-3 text-center text-white">
+                <td className="px-4 py-3 text-center text-[hsl(var(--foreground))]">
                   {product.initial_stock.toFixed(2)}
                 </td>
                 {WEEK_DAYS.map((day) => {
@@ -79,12 +81,12 @@ export const WeeklyStockTable: React.FC<WeeklyStockTableProps> = ({
                       <span
                         className={`inline-flex items-center justify-center rounded-full border px-2 py-0.5 text-[11px] font-semibold ${
                           value === null
-                            ? "border-slate-700/70 text-slate-500"
+                            ? "border-[hsl(var(--border))] text-[hsl(var(--muted))]"
                             : value > 0
-                              ? "border-emerald-500/50 text-emerald-300"
+                              ? "border-[hsla(var(--success)/0.6)] text-[hsl(var(--success))]"
                               : value < 0
-                                ? "border-rose-500/50 text-rose-300"
-                                : "border-slate-700/70 text-slate-400"
+                                ? "border-[hsla(var(--danger)/0.6)] text-[hsl(var(--danger))]"
+                                : "border-[hsl(var(--border))] text-[hsl(var(--muted))]"
                         }`}
                       >
                         {formatMovement(value)}

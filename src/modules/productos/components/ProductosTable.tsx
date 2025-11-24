@@ -1,8 +1,8 @@
 "use client";
 
 import React from 'react';
-import { Producto } from '../api';
 import { Pencil, Trash2, CheckCircle2, XCircle } from 'lucide-react';
+import { Producto } from '../types';
 
 interface ProductosTableProps {
   productos: Producto[];
@@ -21,12 +21,12 @@ export function ProductosTable({
   marcas,
   uoms,
 }: ProductosTableProps) {
-  const getCategoriaName = (id: number | null) => {
+  const getCategoriaName = (id?: number | null) => {
     if (!id) return '-';
     return categorias.find((c) => c.id === id)?.nombre || '-';
   };
 
-  const getMarcaName = (id: number | null) => {
+  const getMarcaName = (id?: number | null) => {
     if (!id) return '-';
     return marcas.find((m) => m.id === id)?.nombre || '-';
   };

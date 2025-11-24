@@ -3,6 +3,7 @@ import {
   WeeklyStockRequest,
   WeeklyStockResponse,
 } from "./types";
+import { normalizeWeeklyRequest } from "./query-keys";
 
 const fetchJson = async <T>(url: string, init?: RequestInit): Promise<T> => {
   const response = await fetch(url, {
@@ -34,9 +35,14 @@ export const fetchCategories = () =>
   fetchJson<InventoryCategory[]>("/api/categories");
 
 export const fetchWeeklyStock = (params: WeeklyStockRequest) => {
+  const normalized = normalizeWeeklyRequest(params);
+  if (!normalized) {
+    throw new Error("Se requiere al menos una categoria valida");
+  }
+
   const search = buildQueryString({
-    categories: params.categories.join(","),
-    weekStart: params.weekStart,
+    categories: normalized.categories.join(","),
+    weekStart: normalized.weekStart,
   });
   return fetchJson<WeeklyStockResponse>(`/api/stock/weekly?${search}`);
 };

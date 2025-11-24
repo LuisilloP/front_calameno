@@ -26,9 +26,9 @@ export const DateInput: React.FC<DateInputProps> = ({
       {label && (
         <label
           htmlFor={id || name}
-          className="text-sm font-medium text-gray-700"
+          className="text-sm font-semibold text-[hsl(var(--muted-strong))]"
         >
-          {label} {required ? <span className="text-red-500">*</span> : null}
+          {label} {required ? <span className="text-[hsl(var(--danger))]">*</span> : null}
         </label>
       )}
       <input
@@ -38,7 +38,7 @@ export const DateInput: React.FC<DateInputProps> = ({
         value={value}
         onChange={(e) => onChange && onChange(e.target.value)}
         required={required}
-        className="rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-stone-900"
+        className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] px-3 py-2 text-[hsl(var(--foreground))] shadow-sm transition focus:border-[hsl(var(--accent))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent))] focus:ring-offset-2 focus:ring-offset-[hsl(var(--surface))]"
       />
     </div>
   );

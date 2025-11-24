@@ -36,7 +36,7 @@ export const AdminConfirmDialog = ({
       <div className="flex justify-end gap-3">
         <button
           type="button"
-          className="rounded-full border border-slate-700/80 px-4 py-2 text-sm text-slate-200 hover:border-slate-500"
+          className="rounded-full border border-[hsl(var(--border))] px-4 py-2 text-sm text-[hsl(var(--foreground))] transition hover:border-[hsl(var(--accent))]"
           onClick={onCancel}
           disabled={loading}
         >
@@ -46,8 +46,8 @@ export const AdminConfirmDialog = ({
           type="button"
           className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white ${
             tone === "danger"
-              ? "bg-rose-600/90 hover:bg-rose-600"
-              : "bg-emerald-500/80 hover:bg-emerald-500"
+              ? "bg-[hsl(var(--danger))] hover:bg-[hsla(var(--danger)/0.9)]"
+              : "bg-[hsl(var(--accent))] hover:bg-[hsla(var(--accent)/0.9)]"
           }`}
           onClick={onConfirm}
           disabled={loading}

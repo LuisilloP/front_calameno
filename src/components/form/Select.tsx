@@ -33,9 +33,9 @@ export const Select: React.FC<SelectProps> = ({
       {label && (
         <label
           htmlFor={id || name}
-          className="text-sm font-medium text-foreground"
+          className="text-sm font-semibold text-[hsl(var(--muted-strong))]"
         >
-          {label} {required ? <span className="text-red-500">*</span> : null}
+          {label} {required ? <span className="text-[hsl(var(--danger))]">*</span> : null}
         </label>
       )}
       <select
@@ -43,7 +43,7 @@ export const Select: React.FC<SelectProps> = ({
         name={name}
         value={value}
         onChange={(e) => onChange && onChange(e.target.value)}
-        className="rounded-lg border border-input px-4 py-3 text-base bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-colors"
+        className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] px-4 py-3 text-base text-[hsl(var(--foreground))] shadow-sm transition focus:border-[hsl(var(--accent))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--accent))] focus:ring-offset-2 focus:ring-offset-[hsl(var(--surface))]"
       >
         <option value="">Seleccionar...</option>
         {options.map((opt) => (

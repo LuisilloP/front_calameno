@@ -40,7 +40,12 @@ export type AdminTableProps<T> = {
   accent?: "emerald" | "sky";
 };
 
-const pageSizeOptions = [10, 25, 50];
+const pageSizeOptions: Array<{ value: number; label: string }> = [
+  { value: 10, label: "10" },
+  { value: 25, label: "25" },
+  { value: 50, label: "50" },
+  { value: 500, label: "Todos (500)" },
+];
 
 export const AdminTable = <T,>({
   title,
@@ -65,43 +70,47 @@ export const AdminTable = <T,>({
 
   const accentBorder =
     accent === "emerald"
-      ? "border-emerald-500/30"
-      : "border-sky-500/30";
+      ? "border-[hsla(var(--success)/0.6)]"
+      : "border-[hsla(var(--info)/0.6)]";
   const accentText =
-    accent === "emerald" ? "text-emerald-300" : "text-sky-300";
+    accent === "emerald"
+      ? "text-[hsl(var(--success))]"
+      : "text-[hsl(var(--info))]";
 
   const showSkeleton = isLoading && data.length === 0;
   const showEmpty = !isLoading && data.length === 0;
 
   return (
-    <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6 shadow-2xl backdrop-blur">
-      <div className="flex flex-col gap-4 border-b border-slate-800 pb-6 md:flex-row md:items-center md:justify-between">
+    <div className="rounded-3xl border border-[hsl(var(--border))] bg-[hsl(var(--surface))] p-6 shadow-lg shadow-black/5 backdrop-blur">
+      <div className="flex flex-col gap-4 border-b border-[hsl(var(--border))] pb-6 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">
+          <p className="text-xs uppercase tracking-[0.4em] text-[hsl(var(--muted))]">
             Admin
           </p>
-          <h2 className="mt-1 text-2xl font-semibold text-white">
+          <h2 className="mt-1 text-2xl font-semibold text-[hsl(var(--foreground))]">
             {title}
           </h2>
           {description && (
-            <p className="mt-1 text-sm text-slate-400">{description}</p>
+            <p className="mt-1 text-sm text-[hsl(var(--muted))]">
+              {description}
+            </p>
           )}
         </div>
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-500" />
+            <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-[hsl(var(--muted))]" />
             <input
               value={searchValue}
               onChange={(event) => onSearchChange(event.target.value)}
               placeholder="Buscar por nombre"
-              className="w-full rounded-full border border-slate-700 bg-slate-950/60 py-2 pl-9 pr-4 text-sm text-slate-100 placeholder:text-slate-500 focus:border-slate-300 focus:outline-none md:w-64"
+              className="w-full rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--surface-muted))] py-2 pl-9 pr-4 text-sm text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted))] shadow-sm focus:border-[hsl(var(--accent))] focus:outline-none md:w-64"
             />
           </div>
           {primaryAction && (
             <button
               type="button"
               onClick={primaryAction.onClick}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-500/80 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-[hsl(var(--accent))] px-4 py-2 text-sm font-semibold text-[hsl(var(--accent-foreground))] transition hover:bg-[hsla(var(--accent)/0.9)]"
             >
               {primaryAction.icon}
               {primaryAction.label}
@@ -110,9 +119,9 @@ export const AdminTable = <T,>({
         </div>
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-800">
-        <table className="min-w-full divide-y divide-slate-800">
-          <thead className="bg-slate-950/40 text-left text-xs uppercase tracking-[0.2em] text-slate-500">
+      <div className="mt-6 overflow-x-auto rounded-2xl border border-[hsl(var(--border))]">
+        <table className="min-w-full divide-y divide-[hsl(var(--border))]">
+          <thead className="bg-[hsl(var(--surface-strong))] text-left text-xs uppercase tracking-[0.2em] text-[hsl(var(--muted-strong))]">
             <tr>
               {columns.map((column) => (
                 <th key={column.key} className={`px-6 py-4 ${column.className ?? ""}`}>
@@ -121,7 +130,7 @@ export const AdminTable = <T,>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800">
+          <tbody className="divide-y divide-[hsl(var(--border))]">
             {showSkeleton ? (
               [...Array(Math.max(1, Math.min(pageSize, 5)))].map((_, index) => (
                 <tr key={index} className="animate-pulse">
@@ -130,7 +139,7 @@ export const AdminTable = <T,>({
                       key={column.key}
                       className={`px-6 py-4 ${column.className ?? ""}`}
                     >
-                      <div className="h-4 rounded-full bg-slate-800/80" />
+                      <div className="h-4 rounded-full bg-[hsl(var(--surface-muted))]" />
                     </td>
                   ))}
                 </tr>
@@ -139,22 +148,22 @@ export const AdminTable = <T,>({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-6 py-8 text-center text-sm text-slate-400"
+                  className="px-6 py-8 text-center text-sm text-[hsl(var(--muted))]"
                 >
                   {emptyState ? (
                     <div className="space-y-3">
-                      <p className="text-base font-semibold text-white">
+                      <p className="text-base font-semibold text-[hsl(var(--foreground))]">
                         {emptyState.title}
                       </p>
                       {emptyState.description && (
-                        <p className="text-sm text-slate-400">
+                        <p className="text-sm text-[hsl(var(--muted))]">
                           {emptyState.description}
                         </p>
                       )}
                       {emptyState.action}
                     </div>
                   ) : (
-                    "Sin registros en esta página."
+                    "Sin registros en esta pagina."
                   )}
                 </td>
               </tr>
@@ -162,7 +171,7 @@ export const AdminTable = <T,>({
               data.map((item, index) => (
                 <tr
                   key={index}
-                  className="bg-slate-900/40 text-sm text-slate-100 transition hover:bg-slate-900/70"
+                  className="bg-[hsl(var(--surface))] text-sm text-[hsl(var(--foreground))] transition hover:bg-[hsl(var(--surface-strong))]"
                 >
                   {columns.map((column) => (
                     <td
@@ -178,32 +187,32 @@ export const AdminTable = <T,>({
           </tbody>
         </table>
         {showEmpty && emptyState?.action ? (
-          <div className="border-t border-slate-800 px-6 py-4">
+          <div className="border-t border-[hsl(var(--border))] px-6 py-4">
             {emptyState.action}
           </div>
         ) : null}
       </div>
 
-      <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-slate-800/70 bg-slate-950/30 px-4 py-3 text-sm text-slate-400 md:flex-row md:items-center md:justify-between">
+      <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--surface-muted))] px-4 py-3 text-sm text-[hsl(var(--muted))] md:flex-row md:items-center md:justify-between">
         <div className={`rounded-full border ${accentBorder} px-4 py-2 text-xs ${accentText}`}>
           Mostrando {from}-{to} de {total}
         </div>
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
           <label className="flex items-center gap-2">
-            <span className="text-xs uppercase tracking-[0.3em] text-slate-500">
-              Límite
+            <span className="text-xs uppercase tracking-[0.3em] text-[hsl(var(--muted))]">
+              Limite
             </span>
             <select
-              className="rounded-full border border-slate-800 bg-slate-900/80 px-3 py-1 text-sm text-white focus:border-slate-300 focus:outline-none"
+              className="rounded-full border border-[hsl(var(--border))] bg-[hsl(var(--surface))] px-3 py-1 text-sm text-[hsl(var(--foreground))] focus:border-[hsl(var(--accent))] focus:outline-none"
               value={pageSize}
               onChange={(event) => {
                 const nextSize = Number(event.target.value);
                 onPageSizeChange?.(nextSize);
               }}
             >
-              {pageSizeOptions.map((size) => (
-                <option key={size} value={size}>
-                  {size}
+              {pageSizeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>
@@ -211,18 +220,18 @@ export const AdminTable = <T,>({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              className="rounded-full border border-slate-800 px-3 py-1 text-xs text-slate-200 disabled:opacity-40"
+              className="rounded-full border border-[hsl(var(--border))] px-3 py-1 text-xs text-[hsl(var(--foreground))] disabled:opacity-40"
               onClick={() => onPageChange(Math.max(0, pageIndex - 1))}
               disabled={pageIndex === 0 || isLoading}
             >
               Anterior
             </button>
-            <span className="text-xs">
-              Página {pageIndex + 1} / {totalPages}
+            <span className="text-xs text-[hsl(var(--muted))]">
+              Pagina {pageIndex + 1} / {totalPages}
             </span>
             <button
               type="button"
-              className="rounded-full border border-slate-800 px-3 py-1 text-xs text-slate-200 disabled:opacity-40"
+              className="rounded-full border border-[hsl(var(--border))] px-3 py-1 text-xs text-[hsl(var(--foreground))] disabled:opacity-40"
               onClick={() =>
                 onPageChange(Math.min(totalPages - 1, pageIndex + 1))
               }
@@ -234,7 +243,7 @@ export const AdminTable = <T,>({
         </div>
       </div>
       {isLoading && data.length > 0 && (
-        <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-slate-800/80 px-3 py-1 text-xs text-slate-300">
+        <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-[hsl(var(--border))] px-3 py-1 text-xs text-[hsl(var(--muted))]">
           <Loader2 className="h-3 w-3 animate-spin" />
           Sincronizando datos...
         </div>

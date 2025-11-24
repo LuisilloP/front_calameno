@@ -9,6 +9,9 @@ import {
   CreateCategoriaPayload,
 } from "./categories.service";
 
+const getErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
+
 export default function CategoriesPage() {
   const [formNombre, setFormNombre] = useState("");
   const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -22,8 +25,8 @@ export default function CategoriesPage() {
     try {
       const data = await CategoriesService.getAll();
       setCategorias(data);
-    } catch (e: any) {
-      setError(e.message || "Error cargando categorías");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Error cargando categorías"));
     } finally {
       setLoading(false);
     }
@@ -50,17 +53,17 @@ export default function CategoriesPage() {
       alert("Categoría creada");
       setFormNombre("");
       await load();
-    } catch (e: any) {
-      alert("Error: " + (e.message || "No fue posible crear"));
+    } catch (err: unknown) {
+      alert("Error: " + getErrorMessage(err, "No fue posible crear"));
     }
   };
 
   return (
-    <main className="p-6 min-h-screen">
-      <h1 className="text-2xl font-bold mb-6 text-foreground">
+    <main className="min-h-screen p-6">
+      <h1 className="mb-6 text-2xl font-bold text-foreground">
         Agregar categoría
       </h1>
-      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-2">
         <div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
@@ -72,7 +75,7 @@ export default function CategoriesPage() {
             <div className="text-right">
               <button
                 type="submit"
-                className="bg-primary text-primary-foreground px-6 py-3 rounded hover:bg-primary/90 transition-colors"
+                className="rounded bg-primary px-6 py-3 text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 Guardar categoría
               </button>
@@ -80,7 +83,7 @@ export default function CategoriesPage() {
           </form>
         </div>
         <div>
-          <h2 className="text-xl font-semibold mb-4 text-foreground">
+          <h2 className="mb-4 text-xl font-semibold text-foreground">
             Categorías
           </h2>
           {loading ? (
@@ -92,19 +95,19 @@ export default function CategoriesPage() {
               No hay categorías
             </div>
           ) : (
-            <div className="overflow-x-auto border border-border rounded-lg">
+            <div className="overflow-x-auto rounded-lg border border-border">
               <table className="min-w-full divide-y divide-border">
                 <thead className="bg-muted">
                   <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <th className="px-4 py-2 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                       Nombre
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-card divide-y divide-border">
+                <tbody className="divide-y divide-border bg-card">
                   {categorias.map((c) => (
                     <tr key={c.id} className="hover:bg-muted/50">
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-card-foreground">
+                      <td className="whitespace-nowrap px-4 py-2 text-sm text-card-foreground">
                         {c.nombre}
                       </td>
                     </tr>

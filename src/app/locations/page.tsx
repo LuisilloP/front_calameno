@@ -22,8 +22,10 @@ export default function LocationsPage() {
     try {
       const data = await LocationsService.getAll();
       setLocaciones(data);
-    } catch (e: any) {
-      setError(e.message || "Error cargando locaciones");
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Error cargando locaciones";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -50,8 +52,10 @@ export default function LocationsPage() {
       alert("Locación creada");
       setFormNombre("");
       await load();
-    } catch (e: any) {
-      alert("Error: " + (e.message || "No fue posible crear"));
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "No fue posible crear";
+      alert("Error: " + message);
     }
   };
 

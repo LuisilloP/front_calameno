@@ -91,14 +91,18 @@ type BackendWeeklyProduct = {
   dias?: BackendStockDay[];
 };
 
-const mapStockDay = (day: BackendStockDay) => ({
+export const normalizeStockDay = (day: BackendStockDay) => ({
   fecha: toString(day.fecha ?? day.date ?? day.dia ?? "", ""),
   stock: toNumber(day.stock ?? day.valor ?? day.quantity, 0),
   estado: toStatus(day.estado ?? day.status),
 });
 
-const mapWeeklyProduct = (item: BackendWeeklyProduct): WeeklyStockProduct => {
-  const dias = Array.isArray(item.dias) ? item.dias.map(mapStockDay) : [];
+export const normalizeWeeklyProduct = (
+  item: BackendWeeklyProduct
+): WeeklyStockProduct => {
+  const dias = Array.isArray(item.dias)
+    ? item.dias.map(normalizeStockDay)
+    : [];
   return {
     productoId: toNumber(
       item.productoId ?? item.producto_id ?? item.id ?? item.product_id,
@@ -113,7 +117,7 @@ const mapWeeklyProduct = (item: BackendWeeklyProduct): WeeklyStockProduct => {
       "Producto sin nombre"
     ),
     categoriaId: toNumber(
-      item.categoriaId ?? item.categoria_id ?? item.category_id ?? 0,
+      item.categoriaId ?? item.categoria_id ?? item.category_id ?? 0, 
       0
     ),
     dias: dias.filter((day) => day.fecha.length > 0),
@@ -124,7 +128,9 @@ type BackendCategory = {
   [key: string]: unknown;
 };
 
-const mapCategory = (raw: BackendCategory): InventoryCategory => ({
+export const normalizeInventoryCategory = (
+  raw: BackendCategory
+): InventoryCategory => ({
   id: toNumber(raw.id ?? raw.categoria_id ?? raw.category_id, 0),
   nombre: toString(raw.nombre ?? raw.name ?? "Categoria sin nombre", "Categoria sin nombre"),
 });
@@ -134,7 +140,7 @@ export const inventoryWeeklyApi = {
     const categories = await fetchJson<BackendCategory[]>(CATEGORIES_PATH, {
       signal,
     });
-    return (categories ?? []).map(mapCategory).sort((a, b) =>
+    return (categories ?? []).map(normalizeInventoryCategory).sort((a, b) =>
       a.nombre.localeCompare(b.nombre, "es")
     );
   },
@@ -143,15 +149,27 @@ export const inventoryWeeklyApi = {
     weekStart: string;
     signal?: AbortSignal;
   }): Promise<WeeklyStockProduct[]> {
-    const normalizedWeek = normalizeIsoToMonday(params.weekStart);
+    const safeCategories = Array.from(
+      new Set(params.categoryIds.filter((id) => Number.isFinite(id) && id > 0))
+    ).sort((a, b) => a - b);
+    if (safeCategories.length === 0) return [];
+
+    let normalizedWeek: string;
+    try {
+      normalizedWeek = normalizeIsoToMonday(params.weekStart);
+    } catch (error) {
+      throw new Error(
+        `[InventoryWeeklyApi] weekStart invalido :: ${(error as Error).message}`
+      );
+    }
     const searchParams = {
-      categories: params.categoryIds.join(","),
+      categories: safeCategories.join(","),
       weekStart: normalizedWeek,
     };
     const products = await fetchJson<BackendWeeklyProduct[]>(WEEKLY_STOCK_PATH, {
       searchParams,
       signal: params.signal,
     });
-    return (products ?? []).map(mapWeeklyProduct);
+    return (products ?? []).map(normalizeWeeklyProduct);
   },
 };

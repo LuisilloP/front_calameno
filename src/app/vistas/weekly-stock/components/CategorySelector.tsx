@@ -39,8 +39,8 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
               onClick={() => handleTabClick(cat.id)}
               className={`group relative overflow-hidden rounded-2xl border px-5 py-2 text-sm font-semibold tracking-wide transition ${
                 isSelected
-                  ? "border-sky-500/80 bg-sky-500/15 text-white shadow-[0_10px_25px_rgba(14,165,233,0.25)]"
-                  : "border-slate-800/70 bg-slate-950/30 text-slate-400 hover:border-slate-600 hover:text-white"
+                  ? "border-[hsl(var(--accent))] bg-[hsla(var(--accent)/0.15)] text-[hsl(var(--foreground))] shadow-[0_10px_25px_rgba(0,0,0,0.12)]"
+                  : "border-[hsl(var(--border))] bg-[hsl(var(--surface-strong))] text-[hsl(var(--muted-strong))] hover:border-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))]"
               }`}
             >
               <span className="relative">{cat.nombre}</span>
@@ -66,8 +66,8 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
             key={cat.id}
             className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-sm font-medium transition ${
               isSelected
-                ? "border-sky-500/60 bg-sky-500/10 text-white shadow-[0_10px_25px_rgba(14,165,233,0.25)]"
-                : "border-slate-800/70 bg-slate-950/30 text-slate-400 hover:border-slate-700 hover:text-white"
+                ? "border-[hsl(var(--accent))] bg-[hsla(var(--accent)/0.12)] text-[hsl(var(--foreground))] shadow-[0_10px_25px_rgba(0,0,0,0.1)]"
+                : "border-[hsl(var(--border))] bg-[hsl(var(--surface-strong))] text-[hsl(var(--muted-strong))] hover:border-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))]"
             }`}
           >
             <span>{cat.nombre}</span>
@@ -75,7 +75,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
               type="checkbox"
               checked={isSelected}
               onChange={(e) => handleCheckboxChange(cat.id, e.target.checked)}
-              className="h-4 w-4 rounded border-slate-600 bg-slate-900 text-sky-500 focus:ring-sky-500 focus:ring-offset-0"
+              className="h-4 w-4 rounded border-[hsl(var(--border))] bg-[hsl(var(--surface))] text-[hsl(var(--accent))] focus:ring-[hsl(var(--accent))] focus:ring-offset-0"
             />
           </label>
         );

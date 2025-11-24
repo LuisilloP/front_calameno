@@ -19,7 +19,7 @@ export const CategoryTabs = ({
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={`skeleton-${index}`}
-            className="h-9 w-32 animate-pulse rounded-full bg-slate-800/60"
+            className="h-9 w-32 animate-pulse rounded-full bg-[hsl(var(--surface-strong))]"
           />
         ))}
       </div>
@@ -28,7 +28,7 @@ export const CategoryTabs = ({
 
   if (!categories.length) {
     return (
-      <div className="rounded-xl border border-slate-800/70 bg-slate-900/50 px-4 py-3 text-sm text-slate-400">
+      <div className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--surface-strong))] px-4 py-3 text-sm text-[hsl(var(--muted))]">
         No hay categorias disponibles.
       </div>
     );
@@ -45,10 +45,10 @@ export const CategoryTabs = ({
             role="tab"
             aria-selected={active}
             onClick={() => onChange(category.id)}
-            className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+            className={`rounded-full border px-4 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--accent))] focus-visible:ring-offset-2 focus-visible:ring-offset-[hsl(var(--surface))] ${
               active
-                ? "border-sky-400/70 bg-sky-400/10 text-sky-100 shadow-lg"
-                : "border-slate-800/70 bg-slate-900/30 text-slate-200 hover:border-slate-700 hover:text-slate-50"
+                ? "border-[hsl(var(--accent))] bg-[hsla(var(--accent)/0.2)] text-[hsl(var(--foreground))] shadow-lg shadow-black/10"
+                : "border-[hsl(var(--border))] bg-[hsl(var(--surface-strong))] text-[hsl(var(--muted-strong))] hover:text-[hsl(var(--foreground))]"
             }`}
           >
             {category.nombre}
