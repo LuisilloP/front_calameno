@@ -125,9 +125,11 @@ export class DashboardService {
 
       const data = await response.json();
       return data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(`Error fetching ${url}:`, error);
-      throw error;
+      const message =
+        error instanceof Error ? error.message : `Error fetching ${url}`;
+      throw new Error(message);
     }
   }
 
@@ -150,7 +152,7 @@ export class DashboardService {
     return { start: weekStart, end: weekEnd };
   }
 
-  private static parseCantidad(value: any): number {
+  private static parseCantidad(value: unknown): number {
     if (typeof value === "number") return value;
     if (typeof value !== "string") return 0;
 
@@ -298,35 +300,7 @@ export class DashboardService {
             new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         )
         .slice(0, 10);
-
-      // 4. Extraer IDs únicos
-      const productoIds = [
-        ...new Set(todosMovimientos.map((m) => m.producto_id)),
-      ];
-      const locacionIds = [
-        ...new Set(
-          [
-            ...todosMovimientos.map((m) => m.from_locacion_id),
-            ...todosMovimientos.map((m) => m.to_locacion_id),
-          ].filter((id): id is number => id !== null && id !== undefined)
-        ),
-      ];
-      const personaIds = [
-        ...new Set(
-          todosMovimientos
-            .map((m) => m.persona_id)
-            .filter((id): id is number => id !== null && id !== undefined)
-        ),
-      ];
-      const proveedorIds = [
-        ...new Set(
-          todosMovimientos
-            .map((m) => m.proveedor_id)
-            .filter((id): id is number => id !== null && id !== undefined)
-        ),
-      ];
-
-      // 5. Obtener datos maestros
+      // 4. Obtener datos maestros
       console.log("Fetching productos...");
       const productos = await this.fetchAPI<ProductoAPI[]>("/productos/");
       const productosMap = new Map(
@@ -479,9 +453,13 @@ export class DashboardService {
         },
         endpoints_called: this.endpointsCalled,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching dashboard data:", error);
-      throw new Error(`Error fetching dashboard data: ${error.message}`);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Error desconocido al obtener el dashboard";
+      throw new Error(`Error fetching dashboard data: ${message}`);
     }
   }
 }

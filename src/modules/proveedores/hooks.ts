@@ -4,6 +4,7 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  keepPreviousData,
 } from "@tanstack/react-query";
 import { useApiClient } from "@/modules/admin/hooks/useApiClient";
 import { ListParams } from "@/modules/admin/types";
@@ -24,7 +25,7 @@ export const useProveedoresList = (params: ListParams) => {
   return useQuery({
     queryKey: [PROVEEDORES_KEY, params],
     queryFn: () => listProveedores(params, request),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 };
 

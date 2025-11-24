@@ -37,18 +37,26 @@ const variantTokens: Record<ToastVariant, string> = {
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = React.useState<ToastItem[]>([]);
-  const containerRef = React.useRef<HTMLElement | null>(null);
+  const [containerEl] = React.useState<HTMLElement | null>(() => {
+    if (typeof document === "undefined") return null;
+    const existing = document.getElementById("toast-root");
+    if (existing) return existing;
+    const created = document.createElement("div");
+    created.id = "toast-root";
+    return created;
+  });
 
   React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    let el = document.getElementById("toast-root");
-    if (!el) {
-      el = document.createElement("div");
-      el.id = "toast-root";
-      document.body.appendChild(el);
+    if (!containerEl) return;
+    if (!containerEl.isConnected) {
+      document.body.appendChild(containerEl);
     }
-    containerRef.current = el;
-  }, []);
+    return () => {
+      if (containerEl.parentElement) {
+        containerEl.parentElement.removeChild(containerEl);
+      }
+    };
+  }, [containerEl]);
 
   const remove = React.useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -93,7 +101,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={contextValue}>
       {children}
-      {containerRef.current
+      {containerEl
         ? createPortal(
             <div className="pointer-events-none fixed inset-0 z-1000 flex flex-col items-end gap-2 p-4 sm:p-6">
               <div className="ml-auto w-full max-w-sm space-y-2">
@@ -124,7 +132,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 ))}
               </div>
             </div>,
-            containerRef.current
+            containerEl
           )
         : null}
     </ToastContext.Provider>

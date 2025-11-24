@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { fetchCategories, fetchWeeklyStock } from "./api";
 import {
   InventoryCategory,
@@ -46,7 +46,7 @@ export const useWeeklyStock = (
       return fetchWeeklyStock(normalizedParams);
     },
     enabled,
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     initialData: options?.initialData,
     retry: RETRY_DISABLED,
     staleTime: FIVE_MINUTES,

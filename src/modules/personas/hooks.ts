@@ -4,6 +4,7 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  keepPreviousData,
 } from "@tanstack/react-query";
 import { useApiClient } from "@/modules/admin/hooks/useApiClient";
 import { ListParams } from "@/modules/admin/types";
@@ -24,7 +25,7 @@ export const usePersonasList = (params: ListParams) => {
   return useQuery({
     queryKey: [PERSONAS_KEY, params],
     queryFn: () => listPersonas(params, request),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 };
 

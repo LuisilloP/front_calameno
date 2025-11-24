@@ -82,7 +82,8 @@ const parseErrorPayload = (
     (typeof payload.code === "string" && payload.code) ||
     (typeof detailObject?.code === "string" && detailObject.code) ||
     (typeof payload.error_code === "string" && payload.error_code) ||
-    (typeof payload.errorCode === "string" && payload.errorCode);
+    (typeof payload.errorCode === "string" && payload.errorCode) ||
+    undefined;
 
   return {
     status: typeof payload.status === "number" ? payload.status : 0,

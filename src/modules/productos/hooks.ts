@@ -4,6 +4,7 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  keepPreviousData,
 } from "@tanstack/react-query";
 import { useApiClient } from "@/modules/admin/hooks/useApiClient";
 import { ListParams } from "@/modules/admin/types";
@@ -31,7 +32,7 @@ export const useProductosList = (params: ListParams) => {
   return useQuery({
     queryKey: [PRODUCTOS_KEY, params],
     queryFn: () => listProductos(params, request),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 };
 

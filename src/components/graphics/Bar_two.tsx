@@ -77,6 +77,8 @@ export const DoughnutChart: React.FC<DoughnutChartProps> = ({
   const { resolvedTheme, theme } = useTheme();
 
   const palette = useMemo<Palette>(() => {
+    const themeKey = resolvedTheme ?? theme;
+    void themeKey; // recalcula al cambiar el tema
     return {
       foreground: readVar("--foreground", fallbackPalette.foreground),
       muted: readVar("--muted", fallbackPalette.muted),

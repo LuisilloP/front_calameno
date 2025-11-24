@@ -4,6 +4,7 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  keepPreviousData,
 } from "@tanstack/react-query";
 import { useApiClient } from "@/modules/admin/hooks/useApiClient";
 import { ListParams } from "@/modules/admin/types";
@@ -23,7 +24,7 @@ export const useMarcasList = (params: ListParams) => {
   return useQuery({
     queryKey: [MARCAS_KEY, params],
     queryFn: () => listMarcas(params, request),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 };
 

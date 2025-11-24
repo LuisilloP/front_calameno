@@ -22,8 +22,10 @@ export default function ProvidersPage() {
     try {
       const data = await ProvidersService.getAll();
       setProveedores(data);
-    } catch (e: any) {
-      setError(e.message || "Error cargando proveedores");
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Error cargando proveedores";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -50,8 +52,10 @@ export default function ProvidersPage() {
       alert("Proveedor creado");
       setFormNombre("");
       await load();
-    } catch (e: any) {
-      alert("Error: " + (e.message || "No fue posible crear"));
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "No fue posible crear";
+      alert("Error: " + message);
     }
   };
 

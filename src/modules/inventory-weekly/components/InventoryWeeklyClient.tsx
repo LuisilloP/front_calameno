@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { DownloadIcon, RefreshCcwIcon } from "lucide-react";
 import { InventoryCategory, WeeklyStockRequest } from "../types";
 import { useInventoryCategories, useWeeklyStock } from "../hooks";
@@ -35,9 +35,6 @@ export const InventoryWeeklyClient = ({
   const [weekStart, setWeekStart] = useState(
     normalizeIsoToMonday(initialWeekStart)
   );
-  const [primaryCategoryId, setPrimaryCategoryId] = useState<number | null>(
-    initialCategories[0]?.id ?? null
-  );
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>(
     initialCategories[0] ? [initialCategories[0].id] : []
   );
@@ -49,17 +46,11 @@ export const InventoryWeeklyClient = ({
     refetch: refetchCategories,
   } = useInventoryCategories(initialCategories);
 
-  useEffect(() => {
-    if (!primaryCategoryId && categories.length > 0) {
-      setPrimaryCategoryId(categories[0].id);
-      setSelectedCategoryIds([categories[0].id]);
-    }
-  }, [categories, primaryCategoryId]);
-
-  const normalizedSelection = useMemo(
-    () => ensureSelection(primaryCategoryId, selectedCategoryIds),
-    [primaryCategoryId, selectedCategoryIds]
-  );
+  const normalizedSelection = useMemo(() => {
+    const fallbackId = categories[0]?.id ?? null;
+    const primaryId = selectedCategoryIds[0] ?? fallbackId;
+    return ensureSelection(primaryId, selectedCategoryIds.length ? selectedCategoryIds : primaryId ? [primaryId] : []);
+  }, [categories, selectedCategoryIds]);
 
   const weeklyParams: WeeklyStockRequest | null =
     normalizedSelection.length > 0
@@ -79,7 +70,6 @@ export const InventoryWeeklyClient = ({
   const weekDays = useMemo(() => getWeekDates(weekStart), [weekStart]);
 
   const handleTabChange = (categoryId: number) => {
-    setPrimaryCategoryId(categoryId);
     setSelectedCategoryIds((prev) => {
       const filtered = prev.filter((id) => id !== categoryId);
       return [categoryId, ...filtered];
@@ -87,14 +77,13 @@ export const InventoryWeeklyClient = ({
   };
 
   const handleMultiSelectChange = (ids: number[]) => {
-    if (primaryCategoryId && ids.length === 0) {
-      setSelectedCategoryIds([primaryCategoryId]);
+    const activeId = normalizedSelection[0] ?? null;
+    if (activeId && ids.length === 0) {
+      setSelectedCategoryIds([activeId]);
       return;
     }
     setSelectedCategoryIds(
-      primaryCategoryId
-        ? ensureSelection(primaryCategoryId, ids)
-        : ids
+      activeId ? ensureSelection(activeId, ids) : ids
     );
   };
 
@@ -134,8 +123,9 @@ export const InventoryWeeklyClient = ({
     XLSX.writeFile(workbook, `inventario-semanal-${weekStart}.xlsx`);
   };
 
+  const activeCategoryId = normalizedSelection[0] ?? null;
   const activeCategory = categories.find(
-    (category) => category.id === primaryCategoryId
+    (category) => category.id === activeCategoryId
   );
 
   return (
@@ -223,7 +213,7 @@ export const InventoryWeeklyClient = ({
                 <span
                   key={categoryId}
                   className={`rounded-full border px-3 py-1 ${
-                    categoryId === primaryCategoryId
+                    categoryId === activeCategoryId
                       ? "border-[hsl(var(--accent))] bg-[hsla(var(--accent)/0.2)] text-[hsl(var(--foreground))]"
                       : "border-[hsl(var(--border))] bg-[hsl(var(--surface-strong))] text-[hsl(var(--muted))]"
                   }`}
@@ -236,7 +226,7 @@ export const InventoryWeeklyClient = ({
         </div>
         <CategoryTabs
           categories={categories}
-          activeId={primaryCategoryId}
+          activeId={activeCategoryId}
           onChange={handleTabChange}
           isLoading={categoriesLoading}
         />

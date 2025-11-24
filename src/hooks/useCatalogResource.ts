@@ -18,7 +18,7 @@ type CatalogEntry<K extends CatalogKind> = {
 };
 
 type CatalogStore = Partial<{
-  [K in CatalogKind]: CatalogEntry<K>;
+  [K in CatalogKind]: CatalogEntry<CatalogKind>;
 }>;
 
 const catalogStore: CatalogStore = {};
@@ -45,10 +45,10 @@ const catalogFetchers: {
 };
 
 const getEntry = <K extends CatalogKind>(kind: K): CatalogEntry<K> => {
-  let entry = catalogStore[kind];
+  let entry = catalogStore[kind] as CatalogEntry<K> | undefined;
   if (!entry) {
     entry = { status: "idle" } as CatalogEntry<K>;
-    catalogStore[kind] = entry;
+    catalogStore[kind] = entry as CatalogEntry<CatalogKind>;
   }
   return entry as CatalogEntry<K>;
 };

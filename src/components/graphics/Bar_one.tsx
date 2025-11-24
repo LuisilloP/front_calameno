@@ -83,6 +83,7 @@ export const BarChart: React.FC<BarChartProps> = ({
 
   const palette = useMemo<Palette>(() => {
     const themeKey = resolvedTheme ?? theme;
+    void themeKey; // recalcula al cambiar el tema
     return {
       foreground: readVar("--foreground", fallbackPalette.foreground),
       muted: readVar("--muted", fallbackPalette.muted),

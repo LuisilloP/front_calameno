@@ -94,19 +94,6 @@ const CatalogAutocomplete = ({
   const [open, setOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const previousValue = useRef<number | undefined>(value);
-
-  useEffect(() => {
-    if (previousValue.current !== value) {
-      previousValue.current = value;
-      if (selected) {
-        setQuery(selected.label);
-        setIsTyping(false);
-      } else if (!isTyping) {
-        setQuery("");
-      }
-    }
-  }, [selected, value, isTyping]);
 
   const handleSelect = (opt: CatalogOption) => {
     onChange(opt.id);
@@ -140,8 +127,7 @@ const CatalogAutocomplete = ({
       }`.toLowerCase();
       return haystack.includes(query.toLowerCase());
     }) ?? [];
-  const displayValue =
-    isTyping || !selected ? query : query || selected.label;
+  const displayValue = isTyping ? query : selected?.label ?? "";
 
   return (
     <div className="relative space-y-1" ref={containerRef}>
@@ -453,6 +439,8 @@ const MovementRegistrationPage = () => {
     return map;
   }, [proveedores.data]);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
+  // Sincroniza con la API de stock cuando cambia el producto seleccionado.
   useEffect(() => {
     if (!form.productoId) {
       setStockInfo({ status: "idle" });
@@ -483,6 +471,7 @@ const MovementRegistrationPage = () => {
 
     return () => controller.abort();
   }, [form.productoId, stockLocationId]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // popup toasts are handled by ToastProvider via useToast
 
@@ -606,30 +595,6 @@ const MovementRegistrationPage = () => {
 
     return {};
   };
-
-  const submitButtonUI = useMemo(() => {
-    if (form.tipo === "uso") {
-      return {
-        label: "Registrar uso",
-        classes:
-          "bg-rose-600 text-white hover:bg-rose-500 shadow-lg shadow-rose-900/40",
-        spinner: "text-white",
-      };
-    }
-    if (form.tipo === "ingreso") {
-      return {
-        label: "Registrar ingreso",
-        classes:
-          "bg-emerald-400 text-slate-950 hover:bg-emerald-300 shadow-lg shadow-emerald-900/30",
-        spinner: "text-slate-900",
-      };
-    }
-    return {
-      label: "Registrar movimiento",
-      classes: "bg-slate-50 text-slate-900 hover:bg-white",
-      spinner: "text-slate-900",
-    };
-  }, [form.tipo]);
 
   const isSubmitting = submitState === "submitting";
   return (

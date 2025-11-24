@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import {
   SidebarNavigation,
   SidebarNavigationProps,
@@ -21,14 +21,10 @@ import { useTheme } from "next-themes";
 
 export default function ProductSidebar() {
   const { theme, setTheme, resolvedTheme: nextResolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const resolvedTheme =
-    mounted && (nextResolvedTheme ?? theme) === "dark" ? "dark" : "light";
+    typeof window !== "undefined" && (nextResolvedTheme ?? theme) === "dark"
+      ? "dark"
+      : "light";
 
   const handleThemeToggle = useCallback(() => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");

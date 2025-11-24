@@ -138,7 +138,7 @@ export const WeeklyStockExporter = ({
 
       // Filas de productos
       category.products.forEach((product) => {
-        const row: Record<string, any> = {
+        const row: Record<string, string | number | null> = {
           producto: product.name,
           marca: product.brand ?? "-",
           proveedor: product.supplier ?? "-",
@@ -158,7 +158,9 @@ export const WeeklyStockExporter = ({
     });
 
     // Ajuste compacto de columnas
-    worksheet.columns.forEach((col) => {
+    const columns = worksheet.columns ?? [];
+    columns.forEach((col) => {
+      if (!col || typeof col.eachCell !== "function") return;
       let max = 0;
       col.eachCell({ includeEmpty: true }, (cell) => {
         const text = cell.value ? String(cell.value) : "";

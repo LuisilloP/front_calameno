@@ -31,17 +31,26 @@ const fmtFecha = (iso?: string) => {
 };
 
 export function PopupAlert({ data, onClose, autoCloseMs = 6000 }: PopupAlertProps) {
-  const [rootEl, setRootEl] = React.useState<HTMLElement | null>(null);
+  const [rootEl] = React.useState<HTMLElement | null>(() => {
+    if (typeof document === "undefined") return null;
+    const existing = document.getElementById("popup-alert-root");
+    if (existing) return existing;
+    const created = document.createElement("div");
+    created.id = "popup-alert-root";
+    return created;
+  });
 
   useEffect(() => {
-    let el = document.getElementById("popup-alert-root");
-    if (!el) {
-      el = document.createElement("div");
-      el.id = "popup-alert-root";
-      document.body.appendChild(el);
+    if (!rootEl) return;
+    if (!rootEl.isConnected) {
+      document.body.appendChild(rootEl);
     }
-    setRootEl(el);
-  }, []);
+    return () => {
+      if (rootEl.parentElement) {
+        rootEl.parentElement.removeChild(rootEl);
+      }
+    };
+  }, [rootEl]);
 
   useEffect(() => {
     const timer = window.setTimeout(onClose, autoCloseMs);
