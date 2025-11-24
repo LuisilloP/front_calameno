@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { useApiClient } from "@/modules/admin/hooks/useApiClient";
 import { ListParams } from "@/modules/admin/types";
+import { invalidateCatalog } from "@/hooks/useCatalogResource";
 import {
   createProveedor,
   deleteProveedor,
@@ -16,6 +17,7 @@ import {
 } from "./api";
 
 const PROVEEDORES_KEY = "proveedores";
+const invalidateProveedoresCatalog = () => invalidateCatalog("proveedores");
 
 export const useProveedoresList = (params: ListParams) => {
   const { request } = useApiClient();
@@ -32,10 +34,12 @@ export const useCreateProveedor = () => {
   return useMutation({
     mutationFn: (payload: ProveedorInput) =>
       createProveedor(payload, request),
-    onSuccess: () =>
+    onSuccess: () => {
+      invalidateProveedoresCatalog();
       queryClient.invalidateQueries({
         queryKey: [PROVEEDORES_KEY],
-      }),
+      });
+    },
   });
 };
 
@@ -45,10 +49,12 @@ export const useUpdateProveedor = () => {
   return useMutation({
     mutationFn: ({ id, payload }: { id: number; payload: Partial<ProveedorInput> }) =>
       updateProveedor(id, payload, request),
-    onSuccess: () =>
+    onSuccess: () => {
+      invalidateProveedoresCatalog();
       queryClient.invalidateQueries({
         queryKey: [PROVEEDORES_KEY],
-      }),
+      });
+    },
   });
 };
 
@@ -57,10 +63,12 @@ export const useDeleteProveedor = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => deleteProveedor(id, request),
-    onSuccess: () =>
+    onSuccess: () => {
+      invalidateProveedoresCatalog();
       queryClient.invalidateQueries({
         queryKey: [PROVEEDORES_KEY],
-      }),
+      });
+    },
   });
 };
 

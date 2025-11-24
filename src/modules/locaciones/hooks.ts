@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { useApiClient } from "@/modules/admin/hooks/useApiClient";
 import { ListParams } from "@/modules/admin/types";
+import { invalidateCatalog } from "@/hooks/useCatalogResource";
 import {
   createLocacion,
   listLocaciones,
@@ -16,6 +17,7 @@ import {
 } from "./api";
 
 const LOCACIONES_KEY = "locaciones";
+const invalidateLocacionesCatalog = () => invalidateCatalog("locaciones");
 
 export const useLocacionesList = (params: ListParams) => {
   const { request } = useApiClient();
@@ -32,10 +34,12 @@ export const useCreateLocacion = () => {
   return useMutation({
     mutationFn: (payload: LocacionInput) =>
       createLocacion(payload, request),
-    onSuccess: () =>
+    onSuccess: () => {
+      invalidateLocacionesCatalog();
       queryClient.invalidateQueries({
         queryKey: [LOCACIONES_KEY],
-      }),
+      });
+    },
   });
 };
 
@@ -45,10 +49,12 @@ export const useUpdateLocacion = () => {
   return useMutation({
     mutationFn: ({ id, payload }: { id: number; payload: Partial<LocacionInput> }) =>
       updateLocacion(id, payload, request),
-    onSuccess: () =>
+    onSuccess: () => {
+      invalidateLocacionesCatalog();
       queryClient.invalidateQueries({
         queryKey: [LOCACIONES_KEY],
-      }),
+      });
+    },
   });
 };
 
@@ -58,10 +64,12 @@ export const useToggleLocacion = () => {
   return useMutation({
     mutationFn: ({ id, activa }: { id: number; activa: boolean }) =>
       toggleLocacion(id, activa, request),
-    onSuccess: () =>
+    onSuccess: () => {
+      invalidateLocacionesCatalog();
       queryClient.invalidateQueries({
         queryKey: [LOCACIONES_KEY],
-      }),
+      });
+    },
   });
 };
 

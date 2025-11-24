@@ -344,10 +344,11 @@ const MovementRegistrationPage = () => {
   const unidadMap = useMemo(() => {
     const map = new Map<number, string>();
     uoms.data?.forEach((unidad) => {
-      map.set(
-        unidad.id,
-        unidad.nombre.trim()
-      );
+      const label =
+        unidad.abreviatura?.trim() || unidad.nombre?.trim() || "";
+      if (label) {
+        map.set(unidad.id, label);
+      }
     });
     return map;
   }, [uoms.data]);
@@ -367,13 +368,20 @@ const MovementRegistrationPage = () => {
 
   const productoOptions = useMemo<CatalogOption[] | undefined>(() => {
     if (!productos.data) return undefined;
-    return productos.data.map((producto) => ({
-      id: producto.id,
-      label: producto.nombre,
-      caption: producto.sku ? `SKU ${producto.sku}` : undefined,
-      meta: formatUom(producto),
-    }));
-  }, [productos.data]);
+    return productos.data.map((producto) => {
+      const inlineUnit = formatUom(producto);
+      const catalogUnit = producto.uom_id
+        ? unidadMap.get(producto.uom_id)
+        : undefined;
+      const meta = catalogUnit ?? inlineUnit;
+      return {
+        id: producto.id,
+        label: producto.nombre,
+        caption: producto.sku ? `SKU ${producto.sku}` : undefined,
+        meta: meta || undefined,
+      };
+    });
+  }, [productos.data, unidadMap]);
 
   const allLocationOptions = useMemo<CatalogOption[] | undefined>(() => {
     if (!locaciones.data) return undefined;
@@ -508,9 +516,13 @@ const MovementRegistrationPage = () => {
     setApiError(null);
 
     const validation = validateMovementForm(form);
-    setErrors(validation.errors);
+    const stockErrors = validation.isValid
+      ? validateStockForUse(validation.quantity)
+      : {};
+    const mergedErrors = { ...validation.errors, ...stockErrors };
+    setErrors(mergedErrors);
 
-    if (!validation.isValid) {
+    if (!validation.isValid || Object.keys(stockErrors).length) {
       return;
     }
 
@@ -567,6 +579,33 @@ const MovementRegistrationPage = () => {
 
   const showValidationBanner =
     hasTriedSubmit && submitState === "validating" && Object.keys(errors).length;
+
+  const validateStockForUse = (quantity?: number): MovementFormErrors => {
+    if (form.tipo !== "uso") return {};
+
+    if (stockInfo.status !== "ready" || typeof stockInfo.value !== "number") {
+      return {
+        form:
+          "No pudimos validar el stock disponible en bodega central. Recarga el producto antes de registrar el uso.",
+      };
+    }
+
+    const available = stockInfo.value;
+    if (available <= 1) {
+      return {
+        quantity:
+          "El stock es menor o igual a 1 en la bodega central. No puedes registrar este uso.",
+      };
+    }
+
+    if (typeof quantity === "number" && quantity > available) {
+      return {
+        quantity: `No puedes registrar ${quantity} porque supera el stock disponible (${available}).`,
+      };
+    }
+
+    return {};
+  };
 
   const submitButtonUI = useMemo(() => {
     if (form.tipo === "uso") {

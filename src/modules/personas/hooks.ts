@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { useApiClient } from "@/modules/admin/hooks/useApiClient";
 import { ListParams } from "@/modules/admin/types";
+import { invalidateCatalog } from "@/hooks/useCatalogResource";
 import {
   createPersona,
   deletePersona,
@@ -16,6 +17,7 @@ import {
 } from "./api";
 
 const PERSONAS_KEY = "personas";
+const invalidatePersonasCatalog = () => invalidateCatalog("personas");
 
 export const usePersonasList = (params: ListParams) => {
   const { request } = useApiClient();
@@ -32,10 +34,12 @@ export const useCreatePersona = () => {
   return useMutation({
     mutationFn: (payload: PersonaInput) =>
       createPersona(payload, request),
-    onSuccess: () =>
+    onSuccess: () => {
+      invalidatePersonasCatalog();
       queryClient.invalidateQueries({
         queryKey: [PERSONAS_KEY],
-      }),
+      });
+    },
   });
 };
 
@@ -45,10 +49,12 @@ export const useUpdatePersona = () => {
   return useMutation({
     mutationFn: ({ id, payload }: { id: number; payload: Partial<PersonaInput> }) =>
       updatePersona(id, payload, request),
-    onSuccess: () =>
+    onSuccess: () => {
+      invalidatePersonasCatalog();
       queryClient.invalidateQueries({
         queryKey: [PERSONAS_KEY],
-      }),
+      });
+    },
   });
 };
 
@@ -57,10 +63,12 @@ export const useDeletePersona = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => deletePersona(id, request),
-    onSuccess: () =>
+    onSuccess: () => {
+      invalidatePersonasCatalog();
       queryClient.invalidateQueries({
         queryKey: [PERSONAS_KEY],
-      }),
+      });
+    },
   });
 };
 

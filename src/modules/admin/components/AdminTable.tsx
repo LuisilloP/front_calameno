@@ -40,7 +40,12 @@ export type AdminTableProps<T> = {
   accent?: "emerald" | "sky";
 };
 
-const pageSizeOptions = [10, 25, 50];
+const pageSizeOptions: Array<{ value: number; label: string }> = [
+  { value: 10, label: "10" },
+  { value: 25, label: "25" },
+  { value: 50, label: "50" },
+  { value: 500, label: "Todos (500)" },
+];
 
 export const AdminTable = <T,>({
   title,
@@ -205,9 +210,9 @@ export const AdminTable = <T,>({
                 onPageSizeChange?.(nextSize);
               }}
             >
-              {pageSizeOptions.map((size) => (
-                <option key={size} value={size}>
-                  {size}
+              {pageSizeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>
