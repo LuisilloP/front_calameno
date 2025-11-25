@@ -8,6 +8,7 @@ import {
 import {
   ClipboardListIcon,
   EyeIcon,
+  LifeBuoy,
   LandPlotIcon,
   LayoutDashboardIcon,
   PackageMinusIcon,
@@ -47,6 +48,12 @@ export default function ProductSidebar() {
         label: "Vistas y reportes",
         icon: EyeIcon,
         href: "/vistas",
+      },
+      {
+        id: "help",
+        label: "Centro de ayuda",
+        icon: LifeBuoy,
+        href: "/help",
       },
       // {
       //   id: "support",

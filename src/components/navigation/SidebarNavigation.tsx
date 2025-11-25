@@ -198,6 +198,14 @@ export function SidebarNavigation({
     >
       <header
         className={mergeClassNames("flex flex-col gap-6 p-6", tokens.header)}
+        style={{
+          backgroundImage:
+            'linear-gradient(135deg, rgba(0,0,0,0.38), rgba(0,0,0,0.18)), url("/new_logo.png")',
+          backgroundSize: "cover",
+          backgroundPosition: "center 10%",
+          backgroundRepeat: "no-repeat",
+          backgroundBlendMode: "overlay",
+        }}
       >
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">

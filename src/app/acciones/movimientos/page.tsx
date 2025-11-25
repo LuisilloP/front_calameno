@@ -98,6 +98,7 @@ const CatalogAutocomplete = ({
     [options, value]
   );
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!value) {
       // Reset controlled display when parent clears the selection.
@@ -110,6 +111,7 @@ const CatalogAutocomplete = ({
       setQuery(selected.label);
     }
   }, [selected, value]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleSelect = (opt: CatalogOption) => {
     onChange(opt.id);
