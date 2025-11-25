@@ -133,7 +133,7 @@ export default function ProductSidebar() {
       ],
       user: {
         name: "Equipo Calameno",
-        avatarSrc: "https://i.pravatar.cc/160?img=5",
+        avatarSrc: "/new_logo.png",
         caption: "Ver perfil",
       },
     };
