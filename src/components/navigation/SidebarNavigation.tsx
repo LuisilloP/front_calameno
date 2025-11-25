@@ -641,7 +641,7 @@ function Badge({
 
 /* Example usage:
 
-import { SidebarNavigation, SidebarNavigationProps } from "@/components/ui/SidebarNavigation";
+import { SidebarNavigation, SidebarNavigationProps } from "@/components/navigation/SidebarNavigation";
 import {
   CalendarIcon,
   FileTextIcon,
