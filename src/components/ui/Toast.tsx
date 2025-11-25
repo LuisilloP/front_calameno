@@ -45,6 +45,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     created.id = "toast-root";
     return created;
   });
+  const [isMounted, setIsMounted] = React.useState(false);
 
   React.useEffect(() => {
     if (!containerEl) return;
@@ -57,6 +58,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       }
     };
   }, [containerEl]);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const remove = React.useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -101,7 +106,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={contextValue}>
       {children}
-      {containerEl
+      {isMounted && containerEl
         ? createPortal(
             <div className="pointer-events-none fixed inset-0 z-1000 flex flex-col items-end gap-2 p-4 sm:p-6">
               <div className="ml-auto w-full max-w-sm space-y-2">
