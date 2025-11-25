@@ -89,11 +89,27 @@ const CatalogAutocomplete = ({
   helperText,
   onRetry,
 }: CatalogAutocompleteProps) => {
-  const selected = options?.find((opt) => opt.id === value);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const selected = useMemo(
+    () => options?.find((opt) => opt.id === value),
+    [options, value]
+  );
+
+  useEffect(() => {
+    if (!value) {
+      // Reset controlled display when parent clears the selection.
+      setQuery("");
+      setIsTyping(false);
+      setOpen(false);
+      return;
+    }
+    if (selected) {
+      setQuery(selected.label);
+    }
+  }, [selected, value]);
 
   const handleSelect = (opt: CatalogOption) => {
     onChange(opt.id);
