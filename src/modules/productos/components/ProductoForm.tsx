@@ -242,6 +242,7 @@ const ProductoFormFields = ({
             placeholder="Opcional"
             options={marcaOptions}
             selected={values.marca_id ? [String(values.marca_id)] : []}
+            multiple={false}
             onChange={(ids) =>
               setValues((prev) => ({
                 ...prev,

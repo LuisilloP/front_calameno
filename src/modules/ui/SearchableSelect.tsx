@@ -18,6 +18,7 @@ export type SearchableSelectProps = {
   emptyText?: string;
   disabled?: boolean;
   className?: string;
+  multiple?: boolean;
 };
 
 export const SearchableSelect = ({
@@ -29,6 +30,7 @@ export const SearchableSelect = ({
   emptyText = "Sin coincidencias",
   disabled,
   className = "",
+  multiple = true,
 }: SearchableSelectProps) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -36,11 +38,19 @@ export const SearchableSelect = ({
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const toggleOption = (value: string) => {
-    if (!onChange) return;
-    if (selected.includes(value)) {
-      onChange(selected.filter((item) => item !== value));
+    if (!onChange || disabled) return;
+
+    if (multiple) {
+      if (selected.includes(value)) {
+        onChange(selected.filter((item) => item !== value));
+      } else {
+        onChange([...selected, value]);
+      }
     } else {
-      onChange([...selected, value]);
+      const alreadySelected = selected[0] === value;
+      onChange(alreadySelected ? [] : [value]);
+      setOpen(false);
+      setQuery("");
     }
   };
 
@@ -59,6 +69,9 @@ export const SearchableSelect = ({
     if (open && inputRef.current) {
       inputRef.current.focus();
     }
+    if (!open) {
+      setQuery("");
+    }
   }, [open]);
 
   const filteredOptions = useMemo(() => {
@@ -70,16 +83,24 @@ export const SearchableSelect = ({
 
   const selectedLabel = useMemo(() => {
     if (selected.length === 0) return placeholder;
+    if (!multiple) {
+      const option = options.find((opt) => opt.value === selected[0]);
+      return option?.label ?? placeholder;
+    }
     if (selected.length === 1) {
       const option = options.find((opt) => opt.value === selected[0]);
       return option?.label ?? placeholder;
     }
-    return `${selected.length} categorias`;
-  }, [options, placeholder, selected]);
+    return `${selected.length} opciones`;
+  }, [multiple, options, placeholder, selected]);
 
   const clearSelection = () => {
     if (disabled) return;
     onChange?.([]);
+    if (!multiple) {
+      setOpen(false);
+      setQuery("");
+    }
   };
 
   return (
