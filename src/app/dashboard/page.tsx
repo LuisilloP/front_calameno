@@ -403,7 +403,7 @@ const DashboardInventarioMVP: React.FC = () => {
                 {!movements.isLoading && filteredMovements.length === 0 && (
                   <tr>
                     <td colSpan={8} className="px-3 py-6 text-center text-slate-500">
-                      No hay movimientos para los filtros seleccionados.
+                      No hay movimientos para los filtros seleccionados
                     </td>
                   </tr>
                 )}
