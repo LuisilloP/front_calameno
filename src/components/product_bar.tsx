@@ -139,9 +139,9 @@ export default function ProductSidebar() {
         },
       ],
       user: {
-        name: "Equipo Calameno",
+        name: "Producto desarrollado",
         avatarSrc: "/new_logo.png",
-        caption: "Ver perfil",
+        caption: "bledev-tech & LuisilloP",
       },
     };
   }, [handleThemeToggle, resolvedTheme]);
