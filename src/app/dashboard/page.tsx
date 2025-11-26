@@ -286,7 +286,7 @@ const DashboardInventarioMVP: React.FC = () => {
                     </option>
                   ))}
                 </select>
-                <input
+                {/* <input
                   type="number"
                   className="w-28 rounded-xl border border-slate-700/70 bg-slate-900/80 px-2 py-1"
                   placeholder="Producto ID"
@@ -298,7 +298,7 @@ const DashboardInventarioMVP: React.FC = () => {
                       applyProductoFilter();
                     }
                   }}
-                />
+                /> */}
                 <select
                   className="rounded-xl border border-slate-700/70 bg-slate-900/80 px-2 py-1"
                   value={limit}
