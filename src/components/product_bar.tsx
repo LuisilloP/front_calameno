@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import {
   SidebarNavigation,
   SidebarNavigationProps,
@@ -8,6 +8,7 @@ import {
 import {
   ClipboardListIcon,
   EyeIcon,
+  LifeBuoy,
   LandPlotIcon,
   LayoutDashboardIcon,
   PackageMinusIcon,
@@ -21,10 +22,14 @@ import { useTheme } from "next-themes";
 
 export default function ProductSidebar() {
   const { theme, setTheme, resolvedTheme: nextResolvedTheme } = useTheme();
-  const resolvedTheme =
-    typeof window !== "undefined" && (nextResolvedTheme ?? theme) === "dark"
-      ? "dark"
-      : "light";
+  const [isMounted, setIsMounted] = useState(false);
+  // Needed to render a stable theme on the server and switch after hydration without mismatches.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => setIsMounted(true), []);
+
+  const themeFromProvider = (nextResolvedTheme ?? theme ?? "light") === "dark" ? "dark" : "light";
+  // Keep the initial render stable (light) to avoid SSR/CSR mismatches; switch to actual theme after mount.
+  const resolvedTheme = isMounted ? themeFromProvider : "light";
 
   const handleThemeToggle = useCallback(() => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");
@@ -43,6 +48,12 @@ export default function ProductSidebar() {
         label: "Vistas y reportes",
         icon: EyeIcon,
         href: "/vistas",
+      },
+      {
+        id: "help",
+        label: "Centro de ayuda",
+        icon: LifeBuoy,
+        href: "/help",
       },
       // {
       //   id: "support",
@@ -129,7 +140,7 @@ export default function ProductSidebar() {
       ],
       user: {
         name: "Equipo Calameno",
-        avatarSrc: "https://i.pravatar.cc/160?img=5",
+        avatarSrc: "/new_logo.png",
         caption: "Ver perfil",
       },
     };
