@@ -11,6 +11,8 @@ const RETRIABLE_STATUS = new Set([500, 502, 503, 504]);
 
 type FetchOptions = {
   searchParams?: Record<string, string | number | undefined | null>;
+  /** Optional map of HTTP status codes to fallback values. When matched, the fallback is returned instead of throwing. */
+  fallbackOnStatus?: Record<number, unknown>;
 };
 
 const resolvedTimezone = RAW_TIMEZONE.includes('{{') ? 'UTC' : RAW_TIMEZONE;
@@ -94,7 +96,11 @@ const fetchJson = async <T>(path: string, options: FetchOptions = {}): Promise<T
         signal: controller.signal,
       });
 
+      const fallback = options.fallbackOnStatus?.[response.status];
       if (!response.ok) {
+        if (fallback !== undefined) {
+          return fallback as T;
+        }
         if (RETRIABLE_STATUS.has(response.status) && attempt < MAX_RETRIES) {
           await wait(attempt);
           return execute(attempt + 1);
@@ -388,7 +394,16 @@ export const dashboardApi = {
   getTopUsedProducts: (params: TopUsedParams) =>
     fetchJson<TopUsedProductsResponse>('/dashboard/top-used-products', { searchParams: params }),
   getTopCategories: (params: TopCategoryParams) =>
-    fetchJson<TopCategoriesResponse>('/dashboard/top-categories', { searchParams: params }),
+    fetchJson<TopCategoriesResponse>('/dashboard/top-categories', {
+      searchParams: params,
+      fallbackOnStatus: {
+        404: {
+          days: params?.days,
+          limit: params?.limit,
+          items: [],
+        },
+      },
+    }),
   getAdjustmentsMonitor: (params: AdjustmentsParams) =>
     fetchJson<AdjustmentsMonitorResponse>('/dashboard/adjustments-monitor', { searchParams: params }),
 };

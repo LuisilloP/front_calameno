@@ -89,11 +89,29 @@ const CatalogAutocomplete = ({
   helperText,
   onRetry,
 }: CatalogAutocompleteProps) => {
-  const selected = options?.find((opt) => opt.id === value);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const selected = useMemo(
+    () => options?.find((opt) => opt.id === value),
+    [options, value]
+  );
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (!value) {
+      // Reset controlled display when parent clears the selection.
+      setQuery("");
+      setIsTyping(false);
+      setOpen(false);
+      return;
+    }
+    if (selected) {
+      setQuery(selected.label);
+    }
+  }, [selected, value]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleSelect = (opt: CatalogOption) => {
     onChange(opt.id);
@@ -757,7 +775,7 @@ const MovementRegistrationPage = () => {
 
             {form.productoId && (
               <div className="mt-1 flex items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900/60 px-3 py-2 text-xs text-slate-300">
-                <span className="text-slate-200">
+                <span className="text-slate-200 text-sm">
                   Stock en {stockLocationLabel}:
                 </span>
                 {stockInfo.status === "loading" && (
@@ -772,11 +790,11 @@ const MovementRegistrationPage = () => {
                   </span>
                 )}
                 {stockInfo.status === "ready" && (
-                  <span className="font-semibold text-slate-100">
+                  <span className="font-semibold text-slate-100 text-sm ">
                     {typeof stockInfo.value === "number"
                       ? stockInfo.value.toLocaleString("es-CL", {
-                          minimumFractionDigits: 3,
-                          maximumFractionDigits: 3,
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0,
                         })
                       : "Sin dato"}
                   </span>
