@@ -65,6 +65,7 @@ export const ProductoForm = ({
       {isOpen && (
         <ProductoFormFields
           key={formKey}
+          mode={mode}
           catalogs={catalogs}
           initialValues={initialValues}
           loading={Boolean(loading)}
@@ -83,6 +84,7 @@ const defaultState: ProductoFormState = {
 };
 
 type ProductoFormFieldsProps = {
+  mode: "create" | "edit";
   catalogs: ProductoCatalogs;
   initialValues?: ProductoFormState;
   loading: boolean;
@@ -91,6 +93,7 @@ type ProductoFormFieldsProps = {
 };
 
 const ProductoFormFields = ({
+  mode,
   catalogs,
   initialValues,
   loading,
@@ -110,6 +113,8 @@ const ProductoFormFields = ({
     nameInputRef.current?.focus();
   }, []);
 
+  const isCreate = mode === "create";
+
   const marcaOptions = useMemo(
     () =>
       catalogs.marcas.map((marca) => ({
@@ -128,6 +133,10 @@ const ProductoFormFields = ({
     }
     if (!values.uom_id) {
       setLocalError("Debes seleccionar una unidad de medida.");
+      return;
+    }
+    if (isCreate && !values.categoria_id) {
+      setLocalError("Debes seleccionar una categoria.");
       return;
     }
     setLocalError(null);
@@ -165,7 +174,7 @@ const ProductoFormFields = ({
         aria-label={label}
         disabled={loading}
       >
-        <option value="">{placeholder ?? "Selecciona una opción"}</option>
+        <option value="">{placeholder ?? "Selecciona una opcion"}</option>
         {options.map((option) => (
           <option key={option.id} value={option.id}>
             {option.nombre}
@@ -212,7 +221,7 @@ const ProductoFormFields = ({
         />
         {values.sku && (
           <p className="text-xs text-slate-400">
-            SKU en mayúsculas: {values.sku.toUpperCase()}
+            SKU en mayusculas: {values.sku.toUpperCase()}
           </p>
         )}
       </div>
@@ -243,11 +252,11 @@ const ProductoFormFields = ({
           />
         </div>
         {renderSelect(
-          "Categoría",
+          "Categoria",
           "categoria_id",
           catalogs.categorias,
-          false,
-          "Opcional"
+          isCreate,
+          isCreate ? "Selecciona la categoria" : "Opcional"
         )}
       </div>
 
@@ -265,7 +274,7 @@ const ProductoFormFields = ({
           disabled={loading}
         />
         <span className="text-sm text-slate-200">
-          Activo por defecto (aparece en catálogos y movimientos)
+          Activo por defecto (aparece en catalogos y movimientos)
         </span>
       </label>
 
