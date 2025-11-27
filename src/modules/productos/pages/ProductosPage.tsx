@@ -28,6 +28,7 @@ import {
   DEFAULT_PAGE_SIZE,
 } from "@/modules/admin/types";
 import { normalizeApiError } from "@/modules/admin/api/client";
+import { sortByIdDesc } from "@/modules/admin/utils/sorting";
 
 const INITIAL_LIMIT = DEFAULT_PAGE_SIZE;
 
@@ -61,7 +62,7 @@ const ProductosPageContent = () => {
   };
 
   const filteredRows = useMemo(() => {
-    const items = listQuery.data?.items ?? [];
+    const items = sortByIdDesc(listQuery.data?.items ?? []);
     if (!searchValue.trim()) return items;
     const term = searchValue.toLowerCase();
     return items.filter(

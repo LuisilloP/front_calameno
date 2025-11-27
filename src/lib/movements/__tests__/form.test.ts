@@ -54,7 +54,7 @@ describe("movement form validation", () => {
     expect(notNumber.errors.quantity).toMatch(/numerica/i);
   });
 
-  it("aplica las nuevas reglas de locaciones", () => {
+  it("aplica las nuevas reglas de sectores", () => {
     const usoSinOrigen = validateMovementForm({
       ...baseForm,
       tipo: "uso",

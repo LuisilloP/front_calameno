@@ -419,7 +419,7 @@ const MovementRegistrationPage = () => {
     locacionesById.get(stockLocationId) ??
     (stockLocationId === CENTRAL_LOCATION_ID
       ? centralLocationLabel
-      : `Locacion ${stockLocationId}`);
+      : `Sector ${stockLocationId}`);
 
   const productosById = useMemo(() => {
     const map = new Map<number, string>();
@@ -639,7 +639,7 @@ const MovementRegistrationPage = () => {
                 onRetry={productos.reload}
               />
               <StatusPill
-                label="Locaciones"
+                label="Sectores"
                 status={locaciones.status}
                 onRetry={locaciones.reload}
               />
@@ -892,14 +892,14 @@ const MovementRegistrationPage = () => {
                 />
               ) : (
                 <CatalogAutocomplete
-                  label="Donde se consumio (opcional)"
+                  label="En que sector se consumio (opcional)"
                   placeholder="Ej. Cocina fria, Bar eventos"
                   options={usoDestinationOptions}
                   status={locaciones.status}
                   value={form.toLocationId}
                   disabled={locaciones.status !== "ready"}
                   error={errors.toLocationId}
-                  helperText="Usos registran donde se gasto el producto sin afectar stock en esa locacion; el stock siempre vive en la bodega central."
+                  helperText="Usos registran donde se gasto el producto sin afectar stock en ese sector; el stock siempre vive en la bodega central."
                   onChange={(value) =>
                     setForm((current) => ({
                       ...current,
@@ -1061,7 +1061,7 @@ const MovementRegistrationPage = () => {
                               locacionesById.get(lastMovement.to_locacion_id) ??
                               `ID ${lastMovement.to_locacion_id}`
                             }`
-                          : "Uso sin destino etiquetado"}
+                          : "Uso sin sector etiquetado"}
                   </li>
                   {lastMovement.persona_id && (
                     <li>Persona ID: {lastMovement.persona_id}</li>

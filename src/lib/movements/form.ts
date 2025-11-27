@@ -155,20 +155,20 @@ export const validateMovementForm = (
 
   if (rules.forbidFrom && form.fromLocationId !== undefined) {
     errors.fromLocationId =
-      "Este tipo de movimiento no admite locacion origen.";
+      "Este tipo de movimiento no admite sector origen.";
   }
 
   if (rules.forbidTo && form.toLocationId !== undefined) {
     errors.toLocationId =
-      "Este tipo de movimiento no admite locacion destino.";
+      "Este tipo de movimiento no admite sector destino.";
   }
 
   if (rules.requiresFrom && !form.fromLocationId) {
-    errors.fromLocationId = "Selecciona la locacion origen.";
+    errors.fromLocationId = "Selecciona el sector origen.";
   }
 
   if (rules.requiresTo && !form.toLocationId) {
-    errors.toLocationId = "Selecciona la locacion destino.";
+    errors.toLocationId = "Selecciona el sector destino.";
   }
 
   if (
@@ -176,8 +176,8 @@ export const validateMovementForm = (
     !form.fromLocationId &&
     !form.toLocationId
   ) {
-    errors.fromLocationId ??= "Debes definir al menos una locacion.";
-    errors.toLocationId ??= "Debes definir al menos una locacion.";
+    errors.fromLocationId ??= "Debes definir al menos un sector.";
+    errors.toLocationId ??= "Debes definir al menos un sector.";
   }
 
   if (

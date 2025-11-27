@@ -111,8 +111,8 @@ export const LocacionesTable = ({
 
   return (
     <AdminTable
-      title="Locaciones"
-      description="Administra bodegas y areas disponibles para movimientos."
+      title="Sectores"
+      description="Administra bodegas y puntos de consumo disponibles para movimientos."
       data={data}
       columns={resolvedColumns}
       isLoading={isLoading}
@@ -124,14 +124,14 @@ export const LocacionesTable = ({
       searchValue={searchValue}
       onSearchChange={onSearchChange}
       primaryAction={{
-        label: "Nueva locacion",
+        label: "Nuevo sector",
         onClick: onCreateClick,
         icon: <Plus className="h-4 w-4" />,
       }}
       emptyState={{
-        title: "Aun no registras locaciones",
+        title: "Aun no registras sectores",
         description:
-          "Crea la primera locacion para empezar a asociar movimientos.",
+          "Crea el primer sector para empezar a asociar movimientos.",
       }}
       accent="emerald"
     />

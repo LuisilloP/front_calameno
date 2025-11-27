@@ -40,7 +40,7 @@ export default function HelpPage() {
               Agrega <strong>proveedores</strong> y <strong>personas</strong> (quien consume).
             </li>
             <li>
-              Define <strong>locaciones</strong> (Bodega Calameno, Barra, Cocina, Camara fria, etc.).
+              Define <strong>sectores</strong> (Bodega Calameno, Barra, Cocina, Camara fria, etc.).
             </li>
             <li>
               Da de alta los <strong>productos</strong> con SKU, unidad, categoria, marca y proveedor.
@@ -55,7 +55,7 @@ export default function HelpPage() {
           <ul className="list-disc space-y-1 pl-4">
             <li>
               <strong>Barra lateral:</strong> accesos a Panel principal, Vistas y reportes, Registro de movimientos y
-              Administracion (productos, locaciones, categorias, marcas, proveedores, personas).
+              Administracion (productos, sectores, categorias, marcas, proveedores, personas).
             </li>
             <li>
               <strong>Tema claro/oscuro:</strong> boton sol/luna en el header del menu lateral.
@@ -76,8 +76,8 @@ export default function HelpPage() {
               <strong>Ingreso:</strong> producto, cantidad, proveedor y nota (opcional). Suma stock en Bodega Calameno.
             </li>
             <li>
-              <strong>Uso:</strong> producto, cantidad y locacion donde se consume (Barra, Cocina, etc.). Descuenta del stock
-              central; la locacion es solo referencia.
+              <strong>Uso:</strong> producto, cantidad y sector donde se consume (Barra, Cocina, etc.). Descuenta del stock
+              central; el sector es solo referencia.
             </li>
             
           </ul>
@@ -103,7 +103,7 @@ export default function HelpPage() {
         <Card title="Vistas y reportes">
           <ul className="list-disc space-y-1 pl-4">
             <li>
-              <strong>Stock semanal:</strong> elige semana y filtra por categoria. Muestra stock por locacion y producto.
+              <strong>Stock semanal:</strong> elige semana y filtra por categoria. Muestra stock por sector y producto.
             </li>
             <li>
               <strong>Exportar Excel:</strong> el boton Exportar genera XLSX segun los filtros aplicados.
@@ -121,7 +121,7 @@ export default function HelpPage() {
               <strong>Productos:</strong> nombre, SKU, unidad, categoria, marca, proveedor.
             </li>
             <li>
-              <strong>Locaciones:</strong> bodegas y puntos de consumo.
+              <strong>Sectores:</strong> bodegas y puntos de consumo.
             </li>
             <li>
               <strong>Categorias y Marcas:</strong> para agrupar y reportar.

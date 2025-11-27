@@ -21,6 +21,7 @@ import {
   DEFAULT_PAGE_SIZE,
 } from "@/modules/admin/types";
 import { handleBusinessError } from "@/modules/admin/utils/businessErrors";
+import { sortByIdDesc } from "@/modules/admin/utils/sorting";
 
 const useLocacionesPageLogic = () => {
   const [pageIndex, setPageIndex] = useState(0);
@@ -40,7 +41,7 @@ const useLocacionesPageLogic = () => {
 
   const listQuery = useLocacionesList(params);
   const filteredRows = useMemo(() => {
-    const items = listQuery.data?.items ?? [];
+    const items = sortByIdDesc(listQuery.data?.items ?? []);
     if (!search) return items;
     const text = search.toLowerCase();
     return items.filter((row) =>
@@ -130,7 +131,7 @@ const LocacionesPageContent = () => {
         await createMutation.mutateAsync(values);
         pushToast({
           tone: "success",
-          message: `Locacion ${values.nombre} creada.`,
+          message: `Sector ${values.nombre} creado.`,
         });
       } else if (selected) {
         await updateMutation.mutateAsync({
@@ -139,7 +140,7 @@ const LocacionesPageContent = () => {
         });
         pushToast({
           tone: "success",
-          message: `Locacion ${values.nombre} actualizada.`,
+          message: `Sector ${values.nombre} actualizado.`,
         });
       }
 
@@ -147,7 +148,7 @@ const LocacionesPageContent = () => {
       resetFormState();
     } catch (error) {
       await handleBusinessError(error, {
-        duplicateMessage: "Ya existe una locacion con ese nombre.",
+        duplicateMessage: "Ya existe un sector con ese nombre.",
         queryClient,
         queryKey: "locaciones",
         pushToast,
@@ -177,15 +178,15 @@ const LocacionesPageContent = () => {
       pushToast({
         tone: item.activa ? "warning" : "success",
         message: item.activa
-          ? `Locacion ${item.nombre} desactivada.`
-          : `Locacion ${item.nombre} activada.`,
+          ? `Sector ${item.nombre} desactivado.`
+          : `Sector ${item.nombre} activado.`,
       });
       if (closingModal) {
         setPendingToggle(null);
       }
     } catch (error) {
       await handleBusinessError(error, {
-        duplicateMessage: "Ya existe una locacion con ese nombre.",
+        duplicateMessage: "Ya existe un sector con ese nombre.",
         queryClient,
         queryKey: "locaciones",
         pushToast,
@@ -197,8 +198,8 @@ const LocacionesPageContent = () => {
 
   return (
     <AdminPageShell
-      title="Modulo de locaciones"
-      subtitle="Gestiona bodegas y areas disponibles para movimientos."
+      title="Modulo de sectores"
+      subtitle="Gestiona bodegas y puntos de consumo para movimientos."
       helper="CRUD completo con cache React Query"
     >
       {banner && (
@@ -277,11 +278,11 @@ const LocacionesPageContent = () => {
         isOpen={Boolean(pendingToggle)}
         title={`${
           pendingToggle?.activa ? "Desactivar" : "Activar"
-        } locacion`}
+        } sector`}
         description={
           pendingToggle?.activa
-            ? "Esta locacion ya no estara disponible para movimientos."
-            : "La locacion volvera a estar disponible."
+            ? "Este sector ya no estara disponible para movimientos."
+            : "El sector vuelve a estar disponible."
         }
         confirmLabel={
           pendingToggle?.activa ? "Desactivar" : "Activar"

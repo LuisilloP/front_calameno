@@ -81,7 +81,7 @@ export default function ProductSidebar() {
       },
       {
         id: "admin-locaciones",
-        label: "Locaciones",
+        label: "Sectores",
         icon: LandPlotIcon,
         href: "/admin/locaciones",
       },

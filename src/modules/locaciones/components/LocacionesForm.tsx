@@ -29,9 +29,9 @@ export const LocacionesForm = ({
   return (
     <AdminEntityFormModal
       isOpen={isOpen}
-      title={isEditing ? "Editar locacion" : "Nueva locacion"}
-      description="Las locaciones activas estaran disponibles en el registro de movimientos."
-      submitLabel={isEditing ? "Guardar locacion" : "Crear locacion"}
+      title={isEditing ? "Editar sector" : "Nuevo sector"}
+      description="Los sectores activos estaran disponibles en el registro de movimientos."
+      submitLabel={isEditing ? "Guardar sector" : "Crear sector"}
       loading={loading}
       initialValues={initialValues}
       errorMessage={errorMessage}

@@ -357,7 +357,7 @@ export const normalizeMovement = (item: RecentMovementItemResponse): Movement =>
 
 export const normalizeStockByLocation = (item: StockByLocationItemResponse): StockByLocationItem => ({
   locationId: toNumber(item?.locacion_id, 0, 'stock-by-location.items[].locacion_id'),
-  locationName: toString(item?.locacion_nombre, 'Sin locacion', 'stock-by-location.items[].locacion_nombre'),
+  locationName: toString(item?.locacion_nombre, 'Sin sector', 'stock-by-location.items[].locacion_nombre'),
   total: toNumber(item?.stock_total, 0),
 });
 
@@ -382,7 +382,7 @@ export const normalizeAdjustmentProduct = (item: AdjustmentProductResponse): Adj
 
 export const normalizeAdjustmentLocation = (item: AdjustmentLocationResponse): AdjustmentTopLocation => ({
   locacionId: toNumber(item?.locacion_id, 0, 'adjustments-monitor.top_locations[].locacion_id'),
-  nombre: toString(item?.locacion_nombre, 'Locacion sin nombre', 'adjustments-monitor.top_locations[].locacion_nombre'),
+  nombre: toString(item?.locacion_nombre, 'Sector sin nombre', 'adjustments-monitor.top_locations[].locacion_nombre'),
   ajustes: toNumber(item?.ajustes_count, 0),
 });
 

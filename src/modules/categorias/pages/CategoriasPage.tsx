@@ -23,6 +23,7 @@ import {
   DEFAULT_PAGE_SIZE,
 } from "@/modules/admin/types";
 import { handleBusinessError } from "@/modules/admin/utils/businessErrors";
+import { sortByIdDesc } from "@/modules/admin/utils/sorting";
 
 const useCategoriasState = () => {
   const [pageIndex, setPageIndex] = useState(0);
@@ -43,7 +44,7 @@ const useCategoriasState = () => {
 
   const listQuery = useCategoriasList(params);
   const filteredRows = useMemo(() => {
-    const items = listQuery.data?.items ?? [];
+    const items = sortByIdDesc(listQuery.data?.items ?? []);
     if (!search) return items;
     const text = search.toLowerCase();
     return items.filter((row) =>
